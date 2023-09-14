@@ -2,7 +2,7 @@
   <div class="app">
     <img src="/logo.png" className="logo" />
     <h2>Hello Midway Hooks</h2>
-    <div>{{ admin }}</div>
+    <div class="text-xl p-0 text-red-400">{{ admin }}</div>
   </div>
 </template>
 
