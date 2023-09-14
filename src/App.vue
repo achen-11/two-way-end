@@ -1,13 +1,22 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
   <div class="app">
     <img src="/logo.png" className="logo" />
     <h2>Hello Midway Hooks</h2>
+    <div>{{ admin }}</div>
   </div>
 </template>
+
+<script setup lang="ts">
+import {ref} from 'vue'
+import {getAdminCount} from './api/admin'
+const admin = ref()
+async function init() {
+  admin.value = await getAdminCount()
+}
+init()
+
+</script>
+
 
 <style>
 body {

@@ -7,25 +7,17 @@ datasource db {
   url      = "mysql://root:Achen,0701@127.0.0.1:3306/two_way_end"
 }
 
-model Admin {
-  id          Int      @id @default(autoincrement())
-  user_id     String   @unique
-  name        String
-  password    String
-  createdTime DateTime @default(now()) @map("created_time")
-  updatedTime DateTime @updatedAt @map("updated_time")
-
-  @@map("admin")
-}
-
+// 专业
 model Major {
-  id String  @id @unique
-  college  String
-  classes  Class[]
+  id               String             @id @unique
+  college          String
+  classes          Class[]
+  CourseMaojrLimit CourseMaojrLimit[]
 
   @@map("major")
 }
 
+// 班级
 model Class {
   id          String    @id @unique
   name        String    @unique
@@ -37,24 +29,201 @@ model Class {
   @@map("class")
 }
 
+// 学生
 model Student {
-  id       Int    @id @default(autoincrement())
-  stu_id   String @unique // 学号
+  id       Int     @id @default(autoincrement())
+  stu_id   String  @unique // 学号
   name     String
   sex      Int
   id_card  String // 身份证
   type     Int // 0-本科 1-专升本
-  class    Class  @relation(fields: [class_id], references: [id])
+  class    Class   @relation(fields: [class_id], references: [id])
   class_id String
+  isDelay  Boolean // 是否延毕
 
-  createdTime DateTime @default(now()) @map("created_time")
-  updatedTime DateTime @updatedAt @map("updated_time")
+  created_time DateTime @default(now())
+  update_time  DateTime @updatedAt
+
+  account   Account     @relation(fields: [stu_id], references: [user_name])
+  Star      Star[]
+  Selection Selection[]
 
   @@map("student")
 }
 
+// 教师
 model Teacher {
-  id String @id // 教工号
-  
+  id         Int     @id @unique
+  teacher_id String  @unique // 教工号
+  name       String // 教师名称
+  account    Account @relation(fields: [teacher_id], references: [user_name])
 
+  @@map("teacher")
+}
+
+// 管理员
+model Admin {
+  id          Int      @id @default(autoincrement())
+  user_id     String   @unique
+  name        String
+  createdTime DateTime @default(now()) @map("created_time")
+  updatedTime DateTime @updatedAt @map("updated_time")
+  account     Account  @relation(fields: [user_id], references: [user_name])
+
+  @@map("admin")
+}
+
+// 账号表
+model Account {
+  user_name String @id @unique
+  password  String
+
+  adminProfile     Admin?
+  teacerProfile    Teacher?
+  studentProfile   Student?
+  messagesSent     Message[] @relation("sender")
+  messagesReceived Message[] @relation("target")
+
+  @@map("account")
+}
+
+// 学年学期表
+model Term {
+  id                Int         @id @default(autoincrement())
+  academic_star     String // 开始学年
+  academicEnd       String // 结束学年
+  semester          Int // 学期 1/2
+  exhibitStageStart DateTime // 展示阶段
+  exhibitStageEnd   DateTime
+  firstStageStart   DateTime
+  firstStageEnd     DateTime
+  secondStageStart  DateTime
+  secondStageEnd    DateTime
+  thirdStageStart   DateTime
+  thirdStageEnd     DateTime
+  status            Boolean // true-进行中 false-结束
+  Course            Course[]
+  Star              Star[]
+  Selection         Selection[]
+
+  @@map("term_info")
+}
+
+// 课程表
+model Course {
+  id        Int    @id @default(autoincrement())
+  course_id String
+  link      String // 链接
+  weekNum   String // 周次
+  score     Int // 学分
+  hour      Int // 学时
+  prop      String // 性质 (网课\线下...)
+  domain    String // 课程领域
+
+  type        String // 类型?
+  address     String // 授课教室
+  course_time String // 授课时间
+  targetNum   String // 限选人数
+
+  majorLimit CourseMaojrLimit[] // 专业限制
+  StageLimit StageLimit[] // 年级限制
+
+  created_time DateTime @default(now())
+  update_time  DateTime @updatedAt
+
+  term_id   Int
+  term      Term        @relation(fields: [term_id], references: [id])
+  Star      Star[]
+  Selection Selection[]
+
+  @@map("course")
+}
+
+// 专业限选
+model CourseMaojrLimit {
+  id        Int    @id @default(autoincrement())
+  course_id Int
+  course    Course @relation(fields: [course_id], references: [id])
+  major_id  String
+  marjor    Major  @relation(fields: [major_id], references: [id])
+
+  @@map("course_major_limit")
+}
+
+// 阶段限选
+model StageLimit {
+  id        Int    @id @default(autoincrement())
+  stage     Int // 阶段 0 1 2 3
+  gradLimt  Int // 年级 1 2 3 4 
+  course_id Int // 课程id
+  course    Course @relation(fields: [course_id], references: [id])
+
+  @@map("stage_grade_limit")
+}
+
+// 收藏表
+model Star {
+  id         Int     @id @default(autoincrement())
+  course_id  Int
+  course     Course  @relation(fields: [course_id], references: [id])
+  student_id Int
+  student    Student @relation(fields: [student_id], references: [id])
+  term_id    Int
+  term       Term    @relation(fields: [term_id], references: [id])
+
+  created_time DateTime @default(now())
+  update_time  DateTime @updatedAt
+
+  @@map("star_record")
+}
+
+// 选课情况表
+model Selection {
+  id         Int     @id @default(autoincrement())
+  course_id  Int
+  course     Course  @relation(fields: [course_id], references: [id])
+  student_id Int
+  student    Student @relation(fields: [student_id], references: [id])
+  term_id    Int
+  term       Term    @relation(fields: [term_id], references: [id])
+
+  will_num Int
+  case     String
+  status   Int // 状态, 0-待处理 1-选课成功 2-已拒绝
+  stage    Int // 阶段， 1 2 3
+
+  created_time DateTime @default(now())
+  update_time  DateTime @updatedAt
+
+  @@map("selection_record")
+}
+
+// 通知表
+model Announce {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  department  String
+  clickNum    Int
+  status      Int
+  publishTime DateTime
+
+  created_time DateTime @default(now())
+  update_time  DateTime @updatedAt
+
+  @@map("announce")
+}
+
+// 消息表
+model Message {
+  id             Int     @id @default(autoincrement())
+  content        String
+  sender_user_id String // 发送人
+  target_user_id String // 接收人
+  sender         Account @relation(name: "sender", fields: [sender_user_id], references: [user_name])
+  target         Account @relation(name: "target", fields: [target_user_id], references: [user_name])
+  is_read        Int // 是否已读
+
+  created_time DateTime @default(now())
+  update_time  DateTime @updatedAt
 }
