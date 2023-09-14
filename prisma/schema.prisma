@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:Achen,0701@127.0.0.1:3306/two_way_end"
+}
+
+model Admin {
+  id          Int      @id @default(autoincrement())
+  user_id     String   @unique
+  name        String
+  password    String
+  createdTime DateTime @default(now()) @map("created_time")
+  updatedTime DateTime @updatedAt @map("updated_time")
+
+  @@map("admin")
+}
+
+model Major {
+  id String  @id @unique
+  college  String
+  classes  Class[]
+
+  @@map("major")
+}
+
+model Class {
+  id          String    @id @unique
+  name        String    @unique
+  major       Major     @relation(fields: [major_id], references: [id])
+  major_id    String
+  enroll_year String // 入学年份
+  students    Student[]
+
+  @@map("class")
+}
+
+model Student {
+  id       Int    @id @default(autoincrement())
+  stu_id   String @unique // 学号
+  name     String
+  sex      Int
+  id_card  String // 身份证
+  type     Int // 0-本科 1-专升本
+  class    Class  @relation(fields: [class_id], references: [id])
+  class_id String
+
+  createdTime DateTime @default(now()) @map("created_time")
+  updatedTime DateTime @updatedAt @map("updated_time")
+
+  @@map("student")
+}
+
+model Teacher {
+  id String @id // 教工号
+  
+
+}
