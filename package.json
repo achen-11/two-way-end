@@ -16,6 +16,7 @@
     "@prisma/client": "3.8.1",
     "ant-design-vue": "^4.0.3",
     "axios": "^1.5.0",
+    "pinia": "^2.1.6",
     "vue": "^3.2.25",
     "vue-router": "^4.2.4"
   },
