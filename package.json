@@ -10,12 +10,14 @@
   "dependencies": {
     "@midwayjs/hooks": "^3.1.0",
     "@midwayjs/hooks-kit": "^3.1.0",
+    "@midwayjs/jwt": "^3.12.3",
     "@midwayjs/koa": "^3.10.6",
     "@midwayjs/rpc": "^3.1.0",
     "@midwayjs/serve": "^3.1.0",
     "@prisma/client": "3.8.1",
     "ant-design-vue": "^4.0.3",
     "axios": "^1.5.0",
+    "md5": "^2.3.0",
     "pinia": "^2.1.6",
     "vue": "^3.2.25",
     "vue-router": "^4.2.4"
