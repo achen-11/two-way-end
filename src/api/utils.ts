@@ -1,6 +1,6 @@
-export const failRsp = (message: string, code=400, result={}) => {
+export const failRsp = (message: string, code=400, data={}) => {
   return {
-    result,
+    data,
     message,
     code
   }

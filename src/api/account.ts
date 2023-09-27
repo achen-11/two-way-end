@@ -51,7 +51,10 @@ export const login = Api(
       const token = await jwt.sign(userInfo, 'two-way', {
         expiresIn: '7d'
       })
-      return successRsp({token})
+      return successRsp({
+        token,
+        userInfo
+      })
     } else {
       return failRsp('账号或密码错误')
     }
@@ -60,9 +63,10 @@ export const login = Api(
 
 export const getUserInfo = Api(
   Get('/account'),
-  Middleware(jwtMiddleWare),
-  async(token: string) => {
+  Query<{token: string}>,
+  async() => {
     const jwt = await useInject(JwtService)
-    const payload = jwt.decode(token)
+    const ctx = useContext()
+    const payload = jwt.decode(ctx.query.token)
     return successRsp(payload)
 })
