@@ -6,25 +6,7 @@
       @collapse="onCollapse"
       @breakpoint="onBreakpoint"
     >
-      <div class="logo" />
-      <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline">
-        <a-menu-item key="1">
-          <user-outlined />
-          <span class="nav-text">nav 1</span>
-        </a-menu-item>
-        <a-menu-item key="2">
-          <video-camera-outlined />
-          <span class="nav-text">nav 2</span>
-        </a-menu-item>
-        <a-menu-item key="3">
-          <upload-outlined />
-          <span class="nav-text">nav 3</span>
-        </a-menu-item>
-        <a-menu-item key="4">
-          <user-outlined />
-          <span class="nav-text">nav 4</span>
-        </a-menu-item>
-      </a-menu>
+    <Menu></Menu>
     </a-layout-sider>
     <a-layout>
       <Header></Header>
@@ -42,16 +24,14 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import Header from './header.vue';
-import { UserOutlined, VideoCameraOutlined, UploadOutlined } from '@ant-design/icons-vue';
+import Menu from './menu.vue';
 const onCollapse = (collapsed: boolean, type: string) => {
-  console.log(collapsed, type);
+  // console.log(collapsed, type);
 };
 
 const onBreakpoint = (broken: boolean) => {
-  console.log(broken);
+  // console.log(broken);
 };
-
-const selectedKeys = ref<string[]>(['4']);
 </script>
 <style scoped>
 #components-layout-demo-responsive .logo {
