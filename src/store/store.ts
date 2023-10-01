@@ -39,10 +39,11 @@ export const useRouterStore = defineStore('router', {
       dynamicRoutesList.forEach(r=>{
         router.addRoute(r)
       })
-      this.routers  = router.getRoutes()
+      this.routers = router.getRoutes()
 
       // 填上pathList
-      this.pathList = getAllPaths(this.routers)
+      this.pathList = []
+      this.pathList = getAllPaths(router.getRoutes())
 
     },
   }

@@ -3,6 +3,7 @@ import pinia from '../store/store'
 import { useRouterStore, useUserStore } from '../store/store'
 import { getUserInfo } from '../api/account';
 import { UserInfo } from './types';
+import { notification } from 'ant-design-vue';
 
 
 router.beforeEach(async (to, from, next) => {
@@ -13,7 +14,6 @@ router.beforeEach(async (to, from, next) => {
   if (hasToken) {
     // 是否去登录页
     if (to.path === '/login') {
-      console.log('揍我吧?');
       next({path: '/'})
     } else {
       // 获取页面权限
@@ -24,7 +24,11 @@ router.beforeEach(async (to, from, next) => {
       } else {
         // 没有则获取校验token, 设置角色/路由
         try {
-          const res = await (await fetch('/account?token=' + hasToken)).json()
+          const res = await (await fetch('/account?token=' + hasToken, {
+            headers: {
+              'Authorization': 'two_way_token=' + hasToken
+            }
+          })).json()
           console.log('fetchRes', res);
           if (res.code === 200) {
             // 设置user/router/cookie
@@ -35,6 +39,10 @@ router.beforeEach(async (to, from, next) => {
 
             next({...to, replace: true})
           } else {
+            if (res.code === 401) {
+              notification.error({message: res.message, description: res.message})
+
+            }
             // 校验失败, 清空token, cookie, 跳回login
             localStorage.removeItem('token')
             next('/login')

@@ -25,7 +25,7 @@ export const jwtMiddleWare = async (next: any) => {
   if(/^two_way_token$/i.test(scheme)) {
     try {
       await jwt.verify(token, "two-way", {
-        complete: true,
+        ignoreExpiration: false
       })
       await next()
     }catch (error) {
