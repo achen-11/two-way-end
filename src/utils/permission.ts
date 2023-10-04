@@ -1,7 +1,6 @@
 import router from '../router'
 import pinia from '../store/store'
 import { useRouterStore, useUserStore } from '../store/store'
-import { getUserInfo } from '../api/account';
 import { UserInfo } from './types';
 import { notification } from 'ant-design-vue';
 
@@ -24,7 +23,7 @@ router.beforeEach(async (to, from, next) => {
       } else {
         // 没有则获取校验token, 设置角色/路由
         try {
-          const res = await (await fetch('/account?token=' + hasToken, {
+          const res = await (await fetch('/api/account?token=' + hasToken, {
             headers: {
               'Authorization': 'two_way_token=' + hasToken
             }

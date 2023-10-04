@@ -2,7 +2,7 @@ import { defineStore, createPinia } from "pinia";
 import { ROLE, UserInfo } from "../utils/types";
 import router, { dynamicRoutes } from "@/router";
 import { generateRoutes, getAllPaths } from "@/utils";
-import { getUserInfo } from "@/api/account";
+import { getUserInfo } from "@/api/service/account";
 
 const pinia = createPinia();
 export default pinia;

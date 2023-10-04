@@ -1,14 +1,14 @@
 import { Api, Get, Middleware, Post, Query, useContext, useInject, } from '@midwayjs/hooks';
-import { prisma } from './prisma';
+import { prisma } from '../prisma';
 import { JwtService } from '@midwayjs/jwt';
 import md5 from 'md5'
-import {failRsp, successRsp} from './utils'
-import { ROLE } from '../utils/types';
-import { jwtMiddleWare } from './middle/jwt';
+import {failRsp, successRsp} from '../utils'
+import { ROLE } from '../../utils/types';
+import { jwtMiddleWare } from '../middle/jwt';
 
 
 export const login = Api(
-  Post('/account'),
+  Post('/api/account'),
   async (account: string, password: string, isRember=false) => {
     if (!account || !password) {
       return failRsp('参数缺失', 400, {account, password})
@@ -62,7 +62,7 @@ export const login = Api(
 )
 
 export const getUserInfo = Api(
-  Get('/account'),
+  Get('/api/account'),
   Query<{token: string}>,
   Middleware(jwtMiddleWare),
   async() => {

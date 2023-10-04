@@ -42,7 +42,7 @@
 <script lang="ts" setup>
 import { reactive, computed } from 'vue';
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { login } from '@/api/account';
+import { login } from '@/api/service/account';
 import { notification } from 'ant-design-vue';
 import { useUserStore } from '@/store/store';
 import { useRouter } from 'vue-router';
