@@ -1,5 +1,8 @@
 import { RouteRecordRaw } from "vue-router"
 import { ROLE } from "./types"
+import dayjs from "dayjs";
+
+/* ================================= Router Utils ================================= */
 
 export const  generateRoutes = (allRoutes: RouteRecordRaw[], role: ROLE) => {
   return allRoutes.filter(route => {
@@ -33,4 +36,10 @@ export function getAllPaths(routes: RouteRecordRaw[]): string[] {
   });
 
   return paths;
+}
+
+/* ================================= Format Utils ================================= */
+export const dateTimeFormat = (date)=>{
+  if (!date) return
+  return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
 }
