@@ -1,8 +1,10 @@
+import { getUserInfo } from '@/api/service/account';
 import router from '../router'
 import pinia from '../store/store'
 import { useRouterStore, useUserStore } from '../store/store'
 import { UserInfo } from './types';
 import { notification } from 'ant-design-vue';
+
 
 
 router.beforeEach(async (to, from, next) => {
@@ -23,11 +25,7 @@ router.beforeEach(async (to, from, next) => {
       } else {
         // 没有则获取校验token, 设置角色/路由
         try {
-          const res = await (await fetch('/api/account?token=' + hasToken, {
-            headers: {
-              'Authorization': 'two_way_token=' + hasToken
-            }
-          })).json()
+          const res = await getUserInfo({query: {token: hasToken}, headers: {'Authorization': 'two_way_token=' + hasToken}})
           console.log('fetchRes', res);
           if (res.code === 200) {
             // 设置user/router/cookie

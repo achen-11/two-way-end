@@ -1,8 +1,8 @@
-import { Api, Get, Middleware, Post, Query, useContext, useInject, } from '@midwayjs/hooks';
-import { prisma } from '../prisma';
+import { Api, Get, Headers, Middleware, Post, Query, useContext, useInject, } from '@midwayjs/hooks';
+import { prisma } from '../utils/prisma';
 import { JwtService } from '@midwayjs/jwt';
 import md5 from 'md5'
-import {failRsp, successRsp} from '../utils'
+import {failRsp, successRsp} from '../utils/utils'
 import { ROLE } from '../../utils/types';
 import { jwtMiddleWare } from '../middle/jwt';
 
@@ -63,11 +63,12 @@ export const login = Api(
 
 export const getUserInfo = Api(
   Get('/api/account'),
-  Query<{token: string}>,
+  Query<{token: string}>(),
+  Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async() => {
     const jwt = await useInject(JwtService)
     const ctx = useContext()
-    const payload = jwt.decode(ctx.query.token)
+    const payload = jwt.decodeSync(ctx.query.token)
     return successRsp(payload)
 })
