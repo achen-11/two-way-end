@@ -1,3 +1,4 @@
+// 角色
 export enum ROLE {
   /**管理员 */
   Admin = 'Admin',
@@ -7,7 +8,18 @@ export enum ROLE {
   Student = 'student'
 }
 
+// 用户信息
 export interface UserInfo {
   name: string;
   role: ROLE
+}
+
+// 选课信息
+export interface TermInfo {
+  academic: Date[],
+  semester: number,
+  exhibitStage: Date[],
+  firstStage: Date[]
+  secondStage: Date[]
+  thirdStage: Date[]
 }
