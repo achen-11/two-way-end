@@ -10,6 +10,7 @@ datasource db {
 // 专业
 model Major {
   id               String             @id @unique
+  name             String
   college          String
   classes          Class[]
   CourseMaojrLimit CourseMaojrLimit[]
