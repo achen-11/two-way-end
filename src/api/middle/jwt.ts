@@ -1,7 +1,7 @@
 import { Context } from '@midwayjs/koa';
 import { useContext, useInject } from '@midwayjs/hooks';
 import { JwtService } from '@midwayjs/jwt';
-import { failRsp } from '../utils'
+import { failRsp } from '../utils/utils'
 
 
 
