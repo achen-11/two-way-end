@@ -1,6 +1,7 @@
 import { RouteRecordRaw } from "vue-router"
 import { ROLE } from "./types"
 import dayjs from "dayjs";
+import { notification } from "ant-design-vue";
 
 /* ================================= Router Utils ================================= */
 
@@ -39,7 +40,21 @@ export function getAllPaths(routes: RouteRecordRaw[]): string[] {
 }
 
 /* ================================= Format Utils ================================= */
+// 日期格式化-datetime
 export const dateTimeFormat = (date)=>{
   if (!date) return
   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+}
+
+/* ================================= Other Utils ================================= */
+// 请求结果处理
+export const handleResponse = (response: any, fn: Function) =>{
+  if (response.code === 401) {
+    notification.error({message: '请求异常', description: response.message})
+  } else if (response.code === 200) {
+    fn()
+  } else {
+    notification.error({message: '请求异常', description: response.message})
+  }
+
 }
