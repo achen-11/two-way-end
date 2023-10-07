@@ -24,3 +24,10 @@ export interface TermInfo {
   secondStage: Date[]
   thirdStage: Date[]
 }
+
+// 专业信息
+export interface Major {
+  id?: string
+  name: string,
+  college: "人文学院" | "商务与管理学院" | "信息与智能机电学院" | "环境与公共健康学院",
+}

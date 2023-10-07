@@ -16,6 +16,7 @@ export const routes: RouteRecordRaw[] = [
 ]
 
 export const dynamicRoutes: RouteRecordRaw[] = [
+  // 首页
   {
     path: '/',
     component: Layout,
@@ -36,6 +37,22 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  // Admin-学生信息管理
+  {
+    path: '/student',
+    name: 'student',
+    component: Layout,
+    meta: { roles: [ROLE.Admin], title: '学生信息管理' },
+    children: [
+      {
+        path: '/student/major',
+        name: 'major',
+        component: () => import('@/view/major/index.vue'),
+        meta: { roles: [ROLE.Admin], title: "专业管理" }
+      }
+    ]
+  },
+  // Admin-课程管理
   {
     path: '/adminCourse',
     name: 'adminCourse',
