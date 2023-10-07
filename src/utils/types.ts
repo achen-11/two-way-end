@@ -16,6 +16,7 @@ export interface UserInfo {
 
 // 选课信息
 export interface TermInfo {
+  id?: number,
   academic: Date[],
   semester: number,
   exhibitStage: Date[],

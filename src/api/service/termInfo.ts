@@ -83,11 +83,45 @@ export const addTremInfo = Api(
 )
 
 /**
+ * 更新选课信息
+ * 
+ */
+export const updateTremInfo = Api(
+  Put('/api/termInfo'),
+  Headers<{ Authorization: string }>(),
+  Middleware(jwtMiddleWare),
+  async (formData: TermInfo) => {
+    const {academic, semester, exhibitStage,firstStage, secondStage, thirdStage, id} = formData
+    try {
+      const res = await prisma.term.update({
+        where: { id: id},
+        data: {
+          academic_start: dayjs(academic[0]).get('year'),
+          academic_end: dayjs(academic[1]).get('year'),
+          semester,
+          exhibit_stage_start:exhibitStage[0],
+          exhibit_stage_end:exhibitStage[1],
+          first_stage_start: firstStage[0],
+          first_stage_end: firstStage[1],
+          second_stage_start: secondStage[0],
+          second_stage_end: secondStage[1],
+          third_stage_start: thirdStage[0],
+          third_stage_end: thirdStage[1],
+        }
+      })
+      return successRsp(res)
+    } catch(e) {
+      return failRsp(e)
+    }
+  }
+)
+
+/**
  * 结束选课
  * @param termId 选课信息id
  */
 export const endCurTermById = Api(
-  Put('/api/termInfo'),
+  Put('/api/termInfo/end'),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async (termId: number) => {

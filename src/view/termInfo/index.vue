@@ -96,8 +96,8 @@
 </template>
 <script lang="ts" setup>
 import { UnwrapRef, nextTick, reactive, ref } from 'vue';
-import { dateTimeFormat, handleResponse } from '@/utils'
-import { getCurTermInfo, getHistoryTermInfo, addTremInfo, endCurTermById, deleteTermById} from '@/api/service/termInfo'
+import { dateTimeFormat, handleResponse, tokenHeader } from '@/utils'
+import { getCurTermInfo, getHistoryTermInfo, addTremInfo, endCurTermById, deleteTermById, updateTremInfo } from '@/api/service/termInfo'
 import { TermInfo } from '@/utils/types';
 import { notification } from 'ant-design-vue';
 import dayjs from 'dayjs';
@@ -160,7 +160,7 @@ init()
 const drawerOpen = ref(false)
 const title = ref('新增选课')
 const drawerDisabled = ref(false)
-const open = async (item = null, isDisabled = false) => {
+const open = (item = null, isDisabled = false) => {
 
   drawerDisabled.value = isDisabled
   if (item) {
@@ -168,6 +168,7 @@ const open = async (item = null, isDisabled = false) => {
     drawerOpen.value = true
     title.value = '查看选课信息'
     formData.value = {
+      id: item.id,
       academic: [dayjs().year(item.academic_start), dayjs().year(item.academic_end)],
       semester: item.semester,
       exhibitStage: [dayjs(item.exhibit_stage_start), dayjs(item.exhibit_stage_end)],
@@ -176,22 +177,24 @@ const open = async (item = null, isDisabled = false) => {
       thirdStage: [dayjs(item.third_stage_start), dayjs(item.third_stage_end)]
     }
   } else {
-    if (curDataSource.value.length === 1) {
-      notification.warn({
-        message: '警告⚠️',
-        description: '当前存在进行中的选课，请结束后新增！',
-        duration: 2
-      })
-      return
-    }
+    // if (curDataSource.value.length === 1) {
+    //   notification.warn({
+    //     message: '警告⚠️',
+    //     description: '当前存在进行中的选课，请结束后新增！',
+    //     duration: 2
+    //   })
+    //   return
+    // }
     drawerOpen.value = true
     title.value = '新增选课'
-    await nextTick(() => {
-      formRef.value?.resetFields()
-    })
+    formData.value = { // 初始值
+      id: null, academic: [], semester: null, exhibitStage: null,
+      firstStage: null, secondStage: null, thirdStage: null,
+    }
   }
 }
 const formData = ref({
+  id: null,
   academic: [],
   semester: null,
   exhibitStage: null,
@@ -208,14 +211,25 @@ const handleSubmit = async () => {
   try {
     await formRef.value.validate()
     // 发送请求
-    const res = await addTremInfo(formData.value, {
-      headers: { Authorization: 'two_way_token=' + localStorage.getItem('token') }
-    })
+    // 新增 or 编辑
+    let res = null
+    if (formData.value.id) {
+      // 编辑
+      res = await updateTremInfo(formData.value, {
+        headers: tokenHeader
+      })
+    } else {
+      // 新增
+      res = await addTremInfo(formData.value, {
+        headers: tokenHeader
+      })
+    }
     if (res.code === 401) {
       notification.error({ message: '选课信息异常', description: res.message })
     }
     if (res.code === 200) {
-      notification.success({ message: '新增选课', description: '新增选课信息成功' })
+      notification.success({ message: '选课信息', description: '操作成功!' })
+      drawerOpen.value = false
       init()
     }
   } catch (e) {
@@ -227,22 +241,22 @@ const handleSubmit = async () => {
 const endTrem = async (id: number) => {
   console.log(id);
   const res = await endCurTermById(id, {
-    headers: { Authorization: 'two_way_token=' + localStorage.getItem('token') }
+    headers: tokenHeader
   })
-  handleResponse(res, async ()=>{
+  handleResponse(res, async () => {
     notification.success({ message: '结束选课', description: '当前选课已结束' })
     await init()
   })
-  
+
 }
 
 // 删除选课
 const deleteTrem = async (id: number) => {
   const res = await deleteTermById({
-    query: { id: ''+id },
-    headers: { Authorization: 'two_way_token=' + localStorage.getItem('token') }
+    query: { id: '' + id },
+    headers: tokenHeader
   })
-  handleResponse(res, ()=>{
+  handleResponse(res, () => {
     notification.success({ message: '删除选课', description: '删除选课信息成功' })
     init()
   })

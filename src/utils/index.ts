@@ -56,5 +56,7 @@ export const handleResponse = (response: any, fn: Function) =>{
   } else {
     notification.error({message: '请求异常', description: response.message})
   }
-
 }
+
+// 请求头-token
+export const tokenHeader = { Authorization: 'two_way_token=' + localStorage.getItem('token') }
