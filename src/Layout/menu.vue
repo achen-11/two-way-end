@@ -1,21 +1,20 @@
 <template>
   <div class="flex justify-center items-center text-white text-xl pt-4">选课系统</div>
-  <a-menu v-model:selectedKeys="selectedKeys" theme="dark" mode="inline" :items="items" @click="handleChange">
+  <a-menu v-model:selectedKeys="selectedKeys" v-model:openKeys="openKeys" theme="dark" mode="inline" :items="items"
+    @click="handleChange">
   </a-menu>
 </template>
 
 <script setup lang="ts">
 import { VueElement, computed, reactive, ref } from 'vue';
-import { UserOutlined, VideoCameraOutlined, UploadOutlined } from '@ant-design/icons-vue';
 import { useRouterStore } from '@/store/store';
-import { ItemType } from 'ant-design-vue';
 import { RouteRecordRaw } from 'vue-router';
 import router from '@/router';
 
 const routerStore = useRouterStore()
 
 const items = computed(() => {
-  function generateRouter(routes: RouteRecordRaw[], isSub?:Boolean) {
+  function generateRouter(routes: RouteRecordRaw[], isSub?: Boolean) {
     const res = [];
     routes.forEach(route => {
       if (route.meta.hidden) return // 隐藏
@@ -40,6 +39,7 @@ const items = computed(() => {
           // 生成sub-menus
           children: generateRouter(children, true)
         }
+        // openKeys.value.push(path) // 默认全部展开
         res.push(item);
       } else if (isSub) {
         // 处理sub-menu
@@ -58,7 +58,7 @@ const items = computed(() => {
       }
 
     });
-    
+
     return res;
   }
 
@@ -69,10 +69,21 @@ const items = computed(() => {
 })
 
 const selectedKeys = ref<string[]>([location.hash.slice(1) || '/']);
+const getCurTopPath = () => {
+  const path = location.hash.slice(1) || '/';  // 使用正则表达式匹配路径
+  const match = path.match(/\/([^\/]+)\/[^\/]+$/);
+
+  if (match && match[1]) {
+    return `/${match[1]}`;
+  }
+
+  return null; // 如果匹配失败返回null
+}
+const openKeys = ref<string[]>([getCurTopPath()])
 // 切换菜单(页面跳转)
-const handleChange = (item) =>  {
-  const {key} = item
+const handleChange = (item) => {
+  const { key } = item
   router.push(key)
-  
+
 }
 </script>
