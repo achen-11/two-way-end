@@ -34,7 +34,7 @@
   </div>
   <div class="mt-4">
     <h3>历史选课</h3>
-    <a-table :dataSource="dataSource" :columns="columns" :pagination="pageOpt">
+    <a-table :dataSource="dataSource" :columns="columns" :pagination="pageOpt" :scroll="{y: 400}">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'academic'">
           {{ record.academic_start }} - {{ record.academic_end }} 第{{ record.semester === 1 ? '一' : '二' }}学期
@@ -95,10 +95,9 @@
   </a-drawer>
 </template>
 <script lang="ts" setup>
-import { UnwrapRef, nextTick, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { dateTimeFormat, handleResponse, tokenHeader } from '@/utils'
 import { getCurTermInfo, getHistoryTermInfo, addTremInfo, endCurTermById, deleteTermById, updateTremInfo } from '@/api/service/termInfo'
-import { TermInfo } from '@/utils/types';
 import { notification } from 'ant-design-vue';
 import dayjs from 'dayjs';
 
@@ -177,14 +176,14 @@ const open = (item = null, isDisabled = false) => {
       thirdStage: [dayjs(item.third_stage_start), dayjs(item.third_stage_end)]
     }
   } else {
-    // if (curDataSource.value.length === 1) {
-    //   notification.warn({
-    //     message: '警告⚠️',
-    //     description: '当前存在进行中的选课，请结束后新增！',
-    //     duration: 2
-    //   })
-    //   return
-    // }
+    if (curDataSource.value.length === 1) {
+      notification.warn({
+        message: '警告⚠️',
+        description: '当前存在进行中的选课，请结束后新增！',
+        duration: 2
+      })
+      return
+    }
     drawerOpen.value = true
     title.value = '新增选课'
     formData.value = { // 初始值

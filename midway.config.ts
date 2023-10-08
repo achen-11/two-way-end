@@ -14,4 +14,9 @@ export default defineConfig({
       },
     },
   },
+  source: './src/api',
+  routes: [{
+    baseDir: 'service',
+    basePath: '/api'
+  }]
 });

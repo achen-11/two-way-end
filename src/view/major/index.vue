@@ -6,7 +6,7 @@
   <!-- Table -->
   <div class="mt-4">
     <a-table :columns="columns" :data-source="dataSource" :pagination="pagination" :loading="loading"
-      @change="handleTableChange">
+      @change="handleTableChange" :scroll="{y: 620}">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'index'">
           <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
@@ -46,11 +46,14 @@
 </template>
 
 <script setup lang="ts">
-import { UnwrapRef, nextTick, reactive, ref } from 'vue'
-import { addMajor, getMajorByPage, updateMajor, deleteMajorById } from '@/api/service/major'
+import { reactive, ref } from 'vue'
 import { handleResponse, tokenHeader } from '@/utils';
 import { notification } from 'ant-design-vue';
 import { Major } from '@/utils/types'
+import { 
+  list as findByPage, create as addMajor, 
+  update as updateMajor, remove as deleteMajorById
+ } from '@/api/service/[module]/crud'
 
 const columns = [
   {
@@ -91,7 +94,8 @@ const loading = ref(false)
 const init = async (page = 1) => {
   loading.value = true
   pagination.current = page
-  const res = await getMajorByPage({
+  const res = await findByPage({
+    params: { module: 'major' },
     query: { page: '' + page, limit: '' + 10 },
     headers: tokenHeader
   })
@@ -146,12 +150,14 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       // 编辑
       res = await updateMajor(formData.value as Major, {
-        headers: tokenHeader
+        headers: tokenHeader,
+        params: { module: 'major' }
       })
     } else {
       // 新增
       res = await addMajor(formData.value as Major, {
-        headers: tokenHeader
+        headers: tokenHeader,
+        params: { module: 'major' }
       })
     }
     handleResponse(res, () => {
@@ -167,9 +173,10 @@ const handleSubmit = async () => {
 const handleDelete = async (id: string) => {
   const res = await deleteMajorById({
     headers: tokenHeader,
-    query: {id}
+    query: { id },
+    params: { module: 'major'}
   })
-  handleResponse(res, ()=>{
+  handleResponse(res, () => {
     notification.success({ message: '专业管理', description: '删除成功!' })
     init()
   })

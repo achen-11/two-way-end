@@ -8,7 +8,7 @@ import { jwtMiddleWare } from '../middle/jwt';
 
 
 export const login = Api(
-  Post('/api/account'),
+  Post('/account'),
   async (account: string, password: string, isRember=false) => {
     if (!account || !password) {
       return failRsp('参数缺失', 400, {account, password})
@@ -62,7 +62,7 @@ export const login = Api(
 )
 
 export const getUserInfo = Api(
-  Get('/api/account'),
+  Get('/account'),
   Query<{token: string}>(),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),

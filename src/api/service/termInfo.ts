@@ -9,7 +9,7 @@ import dayjs from 'dayjs';
  * return termInfo
  */
 export const getCurTermInfo = Api(
-  Get('/api/termInfo/cur'), // Http Path: /api/hello,
+  Get('/termInfo/cur'), // Http Path: /api/hello,
   async () => {
     const data = await prisma.term.findFirst({
       where: {
@@ -24,7 +24,7 @@ export const getCurTermInfo = Api(
  * return termInfo[]
  */
 export const getHistoryTermInfo = Api(
-  Get('/api/termInfo/history'),
+  Get('/termInfo/history'),
   Query<{page: string, limit: string}>(),
   async () => {
     const ctx = useContext()
@@ -44,7 +44,7 @@ export const getHistoryTermInfo = Api(
  * @param termInfo 选课信息
  */
 export const addTremInfo = Api(
-  Post('/api/termInfo'),
+  Post('/termInfo'),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async (formData: TermInfo) => {
@@ -87,7 +87,7 @@ export const addTremInfo = Api(
  * 
  */
 export const updateTremInfo = Api(
-  Put('/api/termInfo'),
+  Put('/termInfo'),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async (formData: TermInfo) => {
@@ -121,7 +121,7 @@ export const updateTremInfo = Api(
  * @param termId 选课信息id
  */
 export const endCurTermById = Api(
-  Put('/api/termInfo/end'),
+  Put('/termInfo/end'),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async (termId: number) => {
@@ -145,7 +145,7 @@ export const endCurTermById = Api(
 * 删除选课
 */
 export const deleteTermById = Api(
-  Delete('/api/termInfo'),
+  Delete('/termInfo'),
   Query<{id: string}>(),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
