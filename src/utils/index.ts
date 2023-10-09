@@ -50,11 +50,11 @@ export const dateTimeFormat = (date)=>{
 // 请求结果处理
 export const handleResponse = (response: any, fn: Function) =>{
   if (response.code === 401) {
-    notification.error({message: '身份校验异常', description: response.message})
+    notification.error({message: '身份校验异常', description: JSON.stringify(response.message)})
   } else if (response.code === 200) {
     fn()
   } else {
-    notification.error({message: '请求异常', description: response.message})
+    notification.error({message: '请求异常', description: JSON.stringify(response.message)})
   }
 }
 

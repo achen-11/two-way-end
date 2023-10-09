@@ -1,41 +1,41 @@
 <template>
   <!-- 按钮 -->
   <div class="">
-    <a-button type="primary" @click="open()">新增专业</a-button>
+    <a-button type="primary" @click="open()">新增班级</a-button>
   </div>
   <!-- Table -->
   <div class="mt-4">
     <a-table :columns="columns" :data-source="dataSource" :pagination="pagination" :loading="loading"
-      @change="handleTableChange" :scroll="{y: 620}">
+      @change="handleTableChange" :scroll="{ y: 620 }">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'index'">
           <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
         </template>
+        <template v-if="column.key === 'major'">
+          <span>{{ record.major.name }}</span>
+        </template>
         <template v-if="column.key === 'option'">
           <a-button type="link" primary @click="open(record)">编辑</a-button>
-          <a-popconfirm title="是否确认删除该专业? " @confirm="handleDelete(record.id)">
+          <a-popconfirm title="是否确认删除该班级? " @confirm="handleDelete(record.id)">
             <a-button type="text" danger>删除</a-button>
           </a-popconfirm>
         </template>
       </template>
     </a-table>
     <!-- Drawer -->
-    <a-drawer v-model:open="drawerOpen" title="专业信息" placement="right" width="500">
+    <a-drawer v-model:open="drawerOpen" title="班级信息" placement="right" width="500">
       <a-form ref="formRef" :model="formData" :label-col="labelCol">
-        <a-form-item label="专业ID" name="id" required>
-          <a-input v-model:value="formData.id" :disabled="isEdit" />
-        </a-form-item>
-        <a-form-item label="专业名称" name="name" required>
+        <a-form-item label="班级名称" name="name" required>
           <a-input v-model:value="formData.name" />
         </a-form-item>
-        <a-form-item label="所属学院" name="college" required>
-          <a-select v-model:value="formData.college">
-            <a-select-option value="人文学院">人文学院</a-select-option>
-            <a-select-option value="商务与管理学院">商务与管理学院</a-select-option>
-            <a-select-option value="信息与智能机电学院">信息与智能机电学院</a-select-option>
-            <a-select-option value="环境与公共健康学院">环境与公共健康学院</a-select-option>
+        <a-form-item label="专业" name="major_id" required>
+          <a-select v-model:value="formData.major_id" :options="majorOption" :filter-option="filterOption" show-search>
           </a-select>
         </a-form-item>
+        <a-form-item label="入学年份" name="enroll_year" required>
+          <a-date-picker v-model:value="formData.enroll_year" picker="year" />
+        </a-form-item>
+
         <a-form-item :wrapper-col="{ span: 14, offset: 5 }">
           <a-button class="mr-2" @click="drawerOpen = false">取消</a-button>
           <a-button type="primary" @click="handleSubmit">确认</a-button>
@@ -49,11 +49,15 @@
 import { reactive, ref } from 'vue'
 import { handleResponse, tokenHeader } from '@/utils';
 import { notification } from 'ant-design-vue';
-import { Major } from '@/utils/types'
-import { 
-  list as findByPage, create as addMajor, 
-  update as updateMajor, remove as deleteMajorById
- } from '@/api/service/[module]/crud'
+import { list as findByPage } from '@/api/service/class'
+import {
+  create as addClass, list as curdFind,
+  update as updateClass, remove as deleteMajorById
+} from '@/api/service/[module]/crud'
+import dayjs from 'dayjs';
+
+// crud 的 params
+const params = { module: 'class' }
 
 const columns = [
   {
@@ -62,19 +66,19 @@ const columns = [
     key: 'index'
   },
   {
-    title: '专业ID',
-    dataIndex: 'id',
-    key: 'id'
-  },
-  {
-    title: '专业名称',
+    title: '班级名称',
     dataIndex: 'name',
     key: 'name',
   },
   {
-    title: '所属学院',
-    dataIndex: 'college',
-    key: 'college',
+    title: '专业',
+    dataIndex: 'major',
+    key: 'major',
+  },
+  {
+    title: '入学年份',
+    dataIndex: 'enroll_year',
+    key: 'enroll_year',
   },
   {
     title: '操作',
@@ -95,7 +99,6 @@ const init = async (page = 1) => {
   loading.value = true
   pagination.current = page
   const res = await findByPage({
-    params: { module: 'major' },
     query: { page: '' + page, limit: '' + 10 },
     headers: tokenHeader
   })
@@ -114,26 +117,50 @@ const handleTableChange = (pag: { pageSize: number, current: number }, filters, 
 // Drawer
 const drawerOpen = ref(false)
 // 表单
+
 const formRef = ref()
 const formData = ref({
-  id: 0,
+  id: null,
   name: '',
-  college: '信息与智能机电学院',
+  major_id: '',
+  major: null,
+  enroll_year: dayjs(),
 })
 const isEdit = ref(false)
+
+// 显示弹窗
 const open = (item = null) => {
   if (item) {
     isEdit.value = true
     formData.value = { ...item }
+    formData.value.enroll_year = dayjs(formData.value.enroll_year, 'YYYY')
   } else {
     isEdit.value = false
-    formData.value = { id: 0, name: '', college: '', }
+    formData.value = { id: null, name: '', major_id: '', major: null, enroll_year: dayjs(), }
   }
   drawerOpen.value = true
 }
+// 获取 major 数据
+const majorOption = ref([])
+const getAllMajor = async () => {
+  const res = await curdFind({
+    query: { page: '' + 1, limit: '999' },
+    headers: tokenHeader,
+    params: { module: 'major' }
+  })
+  handleResponse(res, () => {
+    majorOption.value = res.data.list.map(i => { return { label: i.name, value: i.id } })
+  })
+}
+getAllMajor()
+
+const filterOption = (input: string, option: any) => {
+  return option.label.includes(input)
+};
 
 const labelCol = { span: 5 }
 
+// 新增 & 更新
 const handleSubmit = async () => {
   // 触发校验
   console.log(formData.value);
@@ -142,26 +169,33 @@ const handleSubmit = async () => {
     // 发送请求
     // 新增 or 编辑
     let res = null
+    const data = {
+      id: formData.value.id,
+      name: formData.value.name,
+      major_id: formData.value.major_id,
+      enroll_year: dayjs(formData.value.enroll_year).format('YYYY')
+    }
     if (isEdit.value) {
       // 编辑
-      res = await updateMajor(formData.value as Major, {
+      res = await updateClass(data, {
         headers: tokenHeader,
-        params: { module: 'major' }
+        params
       })
     } else {
       // 新增
-      res = await addMajor(formData.value as Major, {
+      delete data.id
+      res = await addClass(data, {
         headers: tokenHeader,
-        params: { module: 'major' }
+        params
       })
     }
     handleResponse(res, () => {
-      notification.success({ message: '专业管理', description: '操作成功!' })
+      notification.success({ message: '班级管理', description: '操作成功!' })
       drawerOpen.value = false
       init()
     })
   } catch (e) {
-    notification.error({ message: '选课信息异常', description: e })
+    notification.error({ message: '班级管理异常', description: e })
   }
 }
 
@@ -169,10 +203,10 @@ const handleDelete = async (id: string) => {
   const res = await deleteMajorById({
     headers: tokenHeader,
     query: { id },
-    params: { module: 'major'}
+    params
   })
   handleResponse(res, () => {
-    notification.success({ message: '专业管理', description: '删除成功!' })
+    notification.success({ message: '班级管理', description: '删除成功!' })
     init()
   })
 }

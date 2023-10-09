@@ -1,13 +1,13 @@
 import { Api, Delete, Get, Headers, Middleware, Params, Post, Put, Query, useContext } from '@midwayjs/hooks';
-import { prisma } from '../../utils/prisma';
-import { failRsp, successRsp } from '../../utils/utils';
-import { jwtMiddleWare } from '../../middle/jwt';
-import { TermInfo } from '@/utils/types';
-import dayjs from 'dayjs';
+import { prisma } from '@/api/utils/prisma';
+import { failRsp, successRsp } from '@/api/utils/utils';
+import { jwtMiddleWare } from '@/api/middle/jwt';
 
 
 // 模块白名单
-const modules = ['major']
+const modules = ['major', 'class']
+
+
 /**
  * 新增数据
  */
@@ -22,9 +22,10 @@ export const create = Api(
     if (!modules.includes(module)) {
       return failRsp('模块参数错误')
     }
+    if (data.id) data.id = +data.id
     try {
       const res = await prisma[module].create({
-        data: { ...data }
+        data: { ...data, }
       })
       return successRsp(res)
     } catch (e) {
@@ -40,15 +41,21 @@ export const list = Api(
   Get(),
   Headers<{ Authorization: string }>(),
   Params<{ module: string }>(),
-  Query<{ page: string, limit: string }>(),
+  Query<{ page: string, limit: string, where?: string }>(),
   Middleware(jwtMiddleWare),
   async () => {
-    const { query: { page = 1, limit = 10 }, params: { module } } = useContext();
+    let { query: { page = 1, limit = 10, where }, params: { module } } = useContext();
     if (!modules.includes(module)) {
       return failRsp('模块参数错误')
     }
+    let _where = {}
+    if (where) {
+      where = JSON.parse(where)
+      if (where.name) _where['name'] = { contains: where.name}
+    }
     // 分页获取数据
     const result = await prisma[module].findMany({
+      where: _where,
       skip: Number(page - 1) * Number(limit),
       take: Number(limit),
     })
@@ -75,7 +82,7 @@ export const update = Api(
       const data = { ...formData }
       delete data.id
       const res = await prisma[module].update({
-        where: { id: String(formData.id) },
+        where: { id: +formData.id },
         data
       })
       return successRsp(res)
@@ -103,7 +110,7 @@ export const remove = Api(
     try {
       const res = await prisma[module].delete({
         where: {
-          id: id
+          id: +id
         }
       })
       return successRsp(res)
