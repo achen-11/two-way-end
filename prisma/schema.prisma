@@ -9,7 +9,7 @@ datasource db {
 
 // 专业
 model Major {
-  id               String             @id @unique
+  id               Int             @id @unique
   name             String
   college          String
   classes          Class[]
@@ -20,10 +20,10 @@ model Major {
 
 // 班级
 model Class {
-  id          String    @id @unique
+  id          Int     @id @default(autoincrement())
   name        String    @unique
   major       Major     @relation(fields: [major_id], references: [id])
-  major_id    String
+  major_id    Int
   enroll_year String // 入学年份
   students    Student[]
 
@@ -39,7 +39,7 @@ model Student {
   id_card  String // 身份证
   type     Int // 0-本科 1-专升本
   class    Class   @relation(fields: [class_id], references: [id])
-  class_id String
+  class_id Int
   isDelay  Boolean // 是否延毕
 
   created_time DateTime @default(now())
@@ -145,7 +145,7 @@ model CourseMaojrLimit {
   id        Int    @id @default(autoincrement())
   course_id Int
   course    Course @relation(fields: [course_id], references: [id])
-  major_id  String
+  major_id  Int
   marjor    Major  @relation(fields: [major_id], references: [id])
 
   @@map("course_major_limit")
