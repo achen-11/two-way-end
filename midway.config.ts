@@ -13,6 +13,10 @@ export default defineConfig({
         '@': path.resolve(__dirname, './src'),
       },
     },
+    server: {
+      port: 8701
+    },
+    envDir: './env',
   },
   source: './src/api',
   routes: [{
