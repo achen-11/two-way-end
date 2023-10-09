@@ -9,7 +9,8 @@ datasource db {
 
 // 专业
 model Major {
-  id               String             @id @unique
+  id               Int             @id @unique
+  name             String
   college          String
   classes          Class[]
   CourseMaojrLimit CourseMaojrLimit[]
@@ -19,10 +20,10 @@ model Major {
 
 // 班级
 model Class {
-  id          String    @id @unique
+  id          Int     @id @default(autoincrement())
   name        String    @unique
   major       Major     @relation(fields: [major_id], references: [id])
-  major_id    String
+  major_id    Int
   enroll_year String // 入学年份
   students    Student[]
 
@@ -38,11 +39,11 @@ model Student {
   id_card  String // 身份证
   type     Int // 0-本科 1-专升本
   class    Class   @relation(fields: [class_id], references: [id])
-  class_id String
+  class_id Int
   isDelay  Boolean // 是否延毕
 
   created_time DateTime @default(now())
-  update_time  DateTime @updatedAt
+  updated_time  DateTime @updatedAt
 
   account   Account     @relation(fields: [stu_id], references: [user_name])
   Star      Star[]
@@ -66,8 +67,8 @@ model Admin {
   id          Int      @id @default(autoincrement())
   user_id     String   @unique
   name        String
-  createdTime DateTime @default(now()) @map("created_time")
-  updatedTime DateTime @updatedAt @map("updated_time")
+  created_time DateTime @default(now()) @map("created_time")
+  updated_time DateTime @updatedAt @map("updated_time")
   account     Account  @relation(fields: [user_id], references: [user_name])
 
   @@map("admin")
@@ -90,17 +91,17 @@ model Account {
 // 学年学期表
 model Term {
   id                Int         @id @default(autoincrement())
-  academic_star     String // 开始学年
-  academicEnd       String // 结束学年
+  academic_start     Int // 开始学年
+  academic_end       Int // 结束学年
   semester          Int // 学期 1/2
-  exhibitStageStart DateTime // 展示阶段
-  exhibitStageEnd   DateTime
-  firstStageStart   DateTime
-  firstStageEnd     DateTime
-  secondStageStart  DateTime
-  secondStageEnd    DateTime
-  thirdStageStart   DateTime
-  thirdStageEnd     DateTime
+  exhibit_stage_start DateTime // 展示阶段
+  exhibit_stage_end   DateTime
+  first_stage_start   DateTime
+  first_stage_end     DateTime
+  second_stage_start  DateTime
+  second_stage_end    DateTime
+  third_stage_start   DateTime
+  third_stage_end     DateTime
   status            Boolean // true-进行中 false-结束
   Course            Course[]
   Star              Star[]
@@ -114,7 +115,7 @@ model Course {
   id        Int    @id @default(autoincrement())
   course_id String
   link      String // 链接
-  weekNum   String // 周次
+  week_num   String // 周次
   score     Int // 学分
   hour      Int // 学时
   prop      String // 性质 (网课\线下...)
@@ -129,7 +130,7 @@ model Course {
   StageLimit StageLimit[] // 年级限制
 
   created_time DateTime @default(now())
-  update_time  DateTime @updatedAt
+  updated_time  DateTime @updatedAt
 
   term_id   Int
   term      Term        @relation(fields: [term_id], references: [id])
@@ -144,7 +145,7 @@ model CourseMaojrLimit {
   id        Int    @id @default(autoincrement())
   course_id Int
   course    Course @relation(fields: [course_id], references: [id])
-  major_id  String
+  major_id  Int
   marjor    Major  @relation(fields: [major_id], references: [id])
 
   @@map("course_major_limit")
@@ -154,7 +155,7 @@ model CourseMaojrLimit {
 model StageLimit {
   id        Int    @id @default(autoincrement())
   stage     Int // 阶段 0 1 2 3
-  gradLimt  Int // 年级 1 2 3 4 
+  grad_limit  Int // 年级 1 2 3 4 
   course_id Int // 课程id
   course    Course @relation(fields: [course_id], references: [id])
 
@@ -172,7 +173,7 @@ model Star {
   term       Term    @relation(fields: [term_id], references: [id])
 
   created_time DateTime @default(now())
-  update_time  DateTime @updatedAt
+  updated_time  DateTime @updatedAt
 
   @@map("star_record")
 }
@@ -193,7 +194,7 @@ model Selection {
   stage    Int // 阶段， 1 2 3
 
   created_time DateTime @default(now())
-  update_time  DateTime @updatedAt
+  updated_time  DateTime @updatedAt
 
   @@map("selection_record")
 }
@@ -204,12 +205,12 @@ model Announce {
   title       String
   content     String
   department  String
-  clickNum    Int
+  click_num    Int
   status      Int
-  publishTime DateTime
+  publish_time DateTime
 
   created_time DateTime @default(now())
-  update_time  DateTime @updatedAt
+  updated_time  DateTime @updatedAt
 
   @@map("announce")
 }
@@ -225,5 +226,6 @@ model Message {
   is_read        Int // 是否已读
 
   created_time DateTime @default(now())
-  update_time  DateTime @updatedAt
+  updated_time  DateTime @updatedAt
+  @@map("message")
 }
