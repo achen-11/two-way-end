@@ -6,10 +6,11 @@
 </template>
 
 <script setup lang="ts">
-import { VueElement, computed, reactive, ref } from 'vue';
+import { VueElement, computed, reactive, ref, watch } from 'vue';
 import { useRouterStore } from '@/store/store';
-import { RouteRecordRaw } from 'vue-router';
+import { RouteRecordRaw, useRoute } from 'vue-router';
 import router from '@/router';
+
 
 const routerStore = useRouterStore()
 
@@ -84,6 +85,10 @@ const openKeys = ref<string[]>([getCurTopPath()])
 const handleChange = (item) => {
   const { key } = item
   router.push(key)
-
 }
+const route = useRoute()
+watch(route,()=>{
+  selectedKeys.value = [route.path]
+  openKeys.value = [getCurTopPath()]
+})
 </script>

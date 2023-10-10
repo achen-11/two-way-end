@@ -11,13 +11,13 @@
     <a-layout>
       <Header></Header>
       <a-layout-content :style="{ margin: '24px 16px 0' }">
-        <div :style="{ padding: '24px', background: '#fff', minHeight: '360px', height: '100%', overflowY: 'auto' }">
+        <div :style="{ padding: '24px 18px', background: '#fff', minHeight: '360px', height: '100%', overflowY: 'auto' }">
           <router-view></router-view>
         </div>
       </a-layout-content>
-      <a-layout-footer style="text-align: center">
+      <div style="text-align: center" class="py-2 text-neutral-400">
         Ant Design ©2018 Created by Ant UED
-      </a-layout-footer>
+      </div>
     </a-layout>
   </a-layout>
 </template>
