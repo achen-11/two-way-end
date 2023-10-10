@@ -9,7 +9,7 @@ datasource db {
 
 // 专业
 model Major {
-  id               Int             @id @unique
+  id               Int                @id @unique
   name             String
   college          String
   classes          Class[]
@@ -20,7 +20,7 @@ model Major {
 
 // 班级
 model Class {
-  id          Int     @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String    @unique
   major       Major     @relation(fields: [major_id], references: [id])
   major_id    Int
@@ -38,13 +38,13 @@ model Student {
   sex      Int
   id_card  String // 身份证
   type     Int // 0-本科 1-专升本
-  class    Class   @relation(fields: [class_id], references: [id])
   class_id Int
-  isDelay  Boolean // 是否延毕
+  is_delay  Boolean // 是否延毕
 
   created_time DateTime @default(now())
-  updated_time  DateTime @updatedAt
+  updated_time DateTime @updatedAt
 
+  class     Class       @relation(fields: [class_id], references: [id])
   account   Account     @relation(fields: [stu_id], references: [user_name])
   Star      Star[]
   Selection Selection[]
@@ -64,12 +64,12 @@ model Teacher {
 
 // 管理员
 model Admin {
-  id          Int      @id @default(autoincrement())
-  user_id     String   @unique
-  name        String
+  id           Int      @id @default(autoincrement())
+  user_id      String   @unique
+  name         String
   created_time DateTime @default(now()) @map("created_time")
   updated_time DateTime @updatedAt @map("updated_time")
-  account     Account  @relation(fields: [user_id], references: [user_name])
+  account      Account  @relation(fields: [user_id], references: [user_name])
 
   @@map("admin")
 }
@@ -90,10 +90,10 @@ model Account {
 
 // 学年学期表
 model Term {
-  id                Int         @id @default(autoincrement())
-  academic_start     Int // 开始学年
-  academic_end       Int // 结束学年
-  semester          Int // 学期 1/2
+  id                  Int         @id @default(autoincrement())
+  academic_start      Int // 开始学年
+  academic_end        Int // 结束学年
+  semester            Int // 学期 1/2
   exhibit_stage_start DateTime // 展示阶段
   exhibit_stage_end   DateTime
   first_stage_start   DateTime
@@ -102,10 +102,10 @@ model Term {
   second_stage_end    DateTime
   third_stage_start   DateTime
   third_stage_end     DateTime
-  status            Boolean // true-进行中 false-结束
-  Course            Course[]
-  Star              Star[]
-  Selection         Selection[]
+  status              Boolean // true-进行中 false-结束
+  Course              Course[]
+  Star                Star[]
+  Selection           Selection[]
 
   @@map("term_info")
 }
@@ -115,7 +115,7 @@ model Course {
   id        Int    @id @default(autoincrement())
   course_id String
   link      String // 链接
-  week_num   String // 周次
+  week_num  String // 周次
   score     Int // 学分
   hour      Int // 学时
   prop      String // 性质 (网课\线下...)
@@ -130,7 +130,7 @@ model Course {
   StageLimit StageLimit[] // 年级限制
 
   created_time DateTime @default(now())
-  updated_time  DateTime @updatedAt
+  updated_time DateTime @updatedAt
 
   term_id   Int
   term      Term        @relation(fields: [term_id], references: [id])
@@ -153,11 +153,11 @@ model CourseMaojrLimit {
 
 // 阶段限选
 model StageLimit {
-  id        Int    @id @default(autoincrement())
-  stage     Int // 阶段 0 1 2 3
-  grad_limit  Int // 年级 1 2 3 4 
-  course_id Int // 课程id
-  course    Course @relation(fields: [course_id], references: [id])
+  id         Int    @id @default(autoincrement())
+  stage      Int // 阶段 0 1 2 3
+  grad_limit Int // 年级 1 2 3 4 
+  course_id  Int // 课程id
+  course     Course @relation(fields: [course_id], references: [id])
 
   @@map("stage_grade_limit")
 }
@@ -173,7 +173,7 @@ model Star {
   term       Term    @relation(fields: [term_id], references: [id])
 
   created_time DateTime @default(now())
-  updated_time  DateTime @updatedAt
+  updated_time DateTime @updatedAt
 
   @@map("star_record")
 }
@@ -194,23 +194,23 @@ model Selection {
   stage    Int // 阶段， 1 2 3
 
   created_time DateTime @default(now())
-  updated_time  DateTime @updatedAt
+  updated_time DateTime @updatedAt
 
   @@map("selection_record")
 }
 
 // 通知表
 model Announce {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  department  String
+  id           Int      @id @default(autoincrement())
+  title        String
+  content      String
+  department   String
   click_num    Int
-  status      Int
+  status       Int
   publish_time DateTime
 
   created_time DateTime @default(now())
-  updated_time  DateTime @updatedAt
+  updated_time DateTime @updatedAt
 
   @@map("announce")
 }
@@ -226,6 +226,7 @@ model Message {
   is_read        Int // 是否已读
 
   created_time DateTime @default(now())
-  updated_time  DateTime @updatedAt
+  updated_time DateTime @updatedAt
+
   @@map("message")
 }
