@@ -5,7 +5,7 @@ import { jwtMiddleWare } from '@/api/middle/jwt';
 
 
 // 模块白名单
-const modules = ['major', 'class']
+const modules = ['major', 'class', 'student']
 
 
 /**
