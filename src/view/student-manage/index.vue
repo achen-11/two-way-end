@@ -1,7 +1,7 @@
 <template>
   <!-- 按钮 -->
   <div class="">
-    <a-button type="primary" @click="">导出学生数据</a-button>
+    <a-button type="primary" @click="modalOpen = true">导出学生数据</a-button>
   </div>
   <!-- 筛选区 -->
   <div class="mt-4 grid md:grid-cols-12 gap-4">
@@ -18,7 +18,7 @@
   <!-- Table -->
   <div class="mt-4">
     <a-table :columns="columns" :data-source="dataSource" :pagination="pagination" :loading="loading"
-      @change="handleTableChange" :scroll="{ y: 534, x: 'max-content' }">
+      @change="handleTableChange" :scroll="{ y: 410, x: 'max-content' }">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'index'">
           <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
@@ -78,16 +78,23 @@
       </a-form-item>
     </a-form>
   </a-drawer>
+  <!-- DownLoad Modal -->
+  <a-modal v-model:open="modalOpen" title="导出数据" @ok="handleExport" centered>
+    <a-radio-group v-model:value="downloadOption">
+      <a-radio value="all">导出所有数据</a-radio>
+      <a-radio value="cur-page">导出当前页</a-radio>
+      <a-radio value="cur-all">导出当前筛选的所有数据</a-radio>
+    </a-radio-group>
+  </a-modal>
 </template>
 
 <script setup>
+/* 导入 */
 import { reactive, ref } from 'vue'
-import { handleResponse, tokenHeader } from '@/utils';
-import { notification } from 'ant-design-vue';
-import { list as findByPage } from '@/api/service/student';
+import { downloadExcel, handleResponse, tokenHeader } from '@/utils';
+import { list as findByPage, excel as exportExcel } from '@/api/service/student';
 
 import {
-  create as crudCreate, list as crudFind,
   update as crudUpdate, remove as crudRemove
 } from '@/api/service/[module]/crud'
 
@@ -158,7 +165,7 @@ const init = async () => {
   try {
     const res = await findByPage({
       query: {
-        page: pagination.current, limit: pagination.pageSize,
+        page: '' + pagination.current, limit: '' + pagination.pageSize,
         option: JSON.stringify(filterData.value)
       },
       headers: tokenHeader
@@ -203,6 +210,7 @@ const open = (item = null) => {
   drawerOpen.value = true
 }
 
+// 更新数据
 const handleSubmit = async () => {
   const data = {
     id: formData.value.id,
@@ -211,14 +219,43 @@ const handleSubmit = async () => {
   try {
     const res = await crudUpdate(data, {
       headers: tokenHeader,
-      params: { module: 'student'}
+      params: { module: 'student' }
     })
-    handleResponse(res, ()=>{
+    handleResponse(res, () => {
       drawerOpen.value = false
       init()
     })
-  } catch(e) {
+  } catch (e) {
   }
 
+}
+
+/**导出数据 */
+const modalOpen = ref(false)
+const downloadOption = ref('all')
+
+const handleExport = async () => {
+  const data = {}
+  switch (downloadOption.value) {
+    case 'all':
+      data.page = 1
+      data.limit = 1000000
+      break;
+    case 'cur-page':
+      data.page = pagination.current
+      data.limit = pagination.pageSize
+      data.option = filterData.value
+      break;
+    case 'cur-all':
+      data.page = 1
+      data.limit = 1000000
+      data.option = filterData.value
+  }
+  const arrayBuffer = await fetch('/api/student/excel', {
+    method: 'post',
+    headers: {...tokenHeader,'Content-Type': 'application/json'},
+    body: JSON.stringify({ args: [data.page, data.limit, data.option] })
+  }).then(res => res.arrayBuffer())
+  downloadExcel(arrayBuffer, '学生数据.xlsx')
 }
 </script>

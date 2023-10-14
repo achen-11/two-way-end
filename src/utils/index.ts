@@ -60,3 +60,18 @@ export const handleResponse = (response: any, fn: Function) =>{
 
 // 请求头-token
 export const tokenHeader = { Authorization: 'two_way_token=' + localStorage.getItem('token') }
+
+
+/**
+ * 传入 buffer 下载xlsx文件
+ * @param buffer 目标 buffer
+ * @param name 文件名称
+ */
+export const downloadExcel = (buffer: ArrayBuffer, name: string) => {
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(new Blob([blob]));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+}
