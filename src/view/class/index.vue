@@ -6,7 +6,7 @@
   <!-- Table -->
   <div class="mt-4">
     <a-table :columns="columns" :data-source="dataSource" :pagination="pagination" :loading="loading"
-      @change="handleTableChange" :scroll="{ y: 620 }">
+      @change="handleTableChange" :scroll="{ y: 495 }">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'index'">
           <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
