@@ -27,13 +27,9 @@ export const jwtMiddleWare = async (next: any) => {
       await jwt.verify(token, "two-way", {
         ignoreExpiration: false
       })
-      await next()
     }catch (error) {
       return failRsp('token过期, 请重新登录', 401, null)
     }
+    await next()
   }
-
-
-  
-
 }

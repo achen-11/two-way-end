@@ -3,12 +3,13 @@ import * as Koa from '@midwayjs/koa';
 import * as jwt from '@midwayjs/jwt';
 import * as redis from '@midwayjs/redis';
 import logger from './middle/logger'
+import errorHandle from './middle/errorHandle'
 /**
  * setup midway server
  */
 export default createConfiguration({
   imports: [Koa, jwt, redis, hooks({
-    middleware: [logger]
+    middleware: [logger, errorHandle]
   })],
   importConfigs: [{ 
     default: { 
