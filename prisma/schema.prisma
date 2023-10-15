@@ -54,7 +54,7 @@ model Student {
 
 // 教师
 model Teacher {
-  id         Int     @id @unique
+  id         Int     @id @default(autoincrement())
   teacher_id String  @unique // 教工号
   name       String // 教师名称
   account    Account @relation(fields: [teacher_id], references: [user_name])

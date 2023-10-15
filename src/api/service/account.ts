@@ -63,9 +63,9 @@ export const login = Api(
 
 export const getUserInfo = Api(
   Get('/account'),
-  Query<{token: string}>(),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
+  Query<{token: string}>(),
   async() => {
     const jwt = await useInject(JwtService)
     const ctx = useContext()
