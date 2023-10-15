@@ -47,13 +47,13 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       {
         path: '/student/major',
         name: 'major',
-        component: () => import('@/view/major/index.vue'),
+        component: () => import('@/view/student-manage/major.vue'),
         meta: { roles: [ROLE.Admin], title: "专业管理" }
       },
       {
         path: '/student/class',
         name: 'class',
-        component: () => import('@/view/class/index.vue'),
+        component: () => import('@/view/student-manage/class.vue'),
         meta: { roles: [ROLE.Admin], title: "班级管理" }
       },
       {
