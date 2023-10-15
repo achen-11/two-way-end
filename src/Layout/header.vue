@@ -30,6 +30,7 @@ const logout = () => {
     onOk() {
       localStorage.removeItem('token')
       router.push('/login')
+      location.reload()
     }
   })
 }
