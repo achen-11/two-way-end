@@ -168,7 +168,7 @@ const init = async () => {
         page: '' + pagination.current, limit: '' + pagination.pageSize,
         option: JSON.stringify(filterData.value)
       },
-      headers: tokenHeader
+      headers: tokenHeader()
     })
     handleResponse(res, () => {
       dataSource.value = res.data.list
@@ -189,6 +189,7 @@ const handleTableChange = (pag) => {
 
 const handleReset = () => {
   filterData.value = {}
+  pagination.current = 1
   init()
 }
 /**Drawer */
@@ -218,7 +219,7 @@ const handleSubmit = async () => {
   }
   try {
     const res = await crudUpdate(data, {
-      headers: tokenHeader,
+      headers: tokenHeader(),
       params: { module: 'student' }
     })
     handleResponse(res, () => {
@@ -253,7 +254,7 @@ const handleExport = async () => {
   }
   const arrayBuffer = await fetch('/api/student/excel', {
     method: 'post',
-    headers: {...tokenHeader,'Content-Type': 'application/json'},
+    headers: {...tokenHeader(),'Content-Type': 'application/json'},
     body: JSON.stringify({ args: [data.page, data.limit, data.option] })
   }).then(res => res.arrayBuffer())
   downloadExcel(arrayBuffer, '学生数据.xlsx')

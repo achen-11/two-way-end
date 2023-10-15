@@ -59,7 +59,9 @@ export const handleResponse = (response: any, fn: Function) =>{
 }
 
 // 请求头-token
-export const tokenHeader = { Authorization: 'two_way_token=' + localStorage.getItem('token') }
+export const tokenHeader = ()=> {
+  return { Authorization: 'two_way_token=' + localStorage.getItem('token') }
+}
 
 
 /**

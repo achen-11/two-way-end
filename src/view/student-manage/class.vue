@@ -100,7 +100,7 @@ const init = async (page = 1) => {
   pagination.current = page
   const res = await findByPage({
     query: { page: '' + page, limit: '' + 10 },
-    headers: tokenHeader
+    headers: tokenHeader()
   })
   handleResponse(res, () => {
     dataSource.value = res.data.list
@@ -145,7 +145,7 @@ const majorOption = ref([])
 const getAllMajor = async () => {
   const res = await curdFind({
     query: { page: '' + 1, limit: '999' },
-    headers: tokenHeader,
+    headers: tokenHeader(),
     params: { module: 'major' }
   })
   handleResponse(res, () => {
@@ -178,14 +178,14 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       // 编辑
       res = await updateClass(data, {
-        headers: tokenHeader,
+        headers: tokenHeader(),
         params
       })
     } else {
       // 新增
       delete data.id
       res = await addClass(data, {
-        headers: tokenHeader,
+        headers: tokenHeader(),
         params
       })
     }
@@ -201,7 +201,7 @@ const handleSubmit = async () => {
 
 const handleDelete = async (id: string) => {
   const res = await deleteMajorById({
-    headers: tokenHeader,
+    headers: tokenHeader(),
     query: { id },
     params
   })

@@ -215,12 +215,12 @@ const handleSubmit = async () => {
     if (formData.value.id) {
       // 编辑
       res = await updateTremInfo(formData.value, {
-        headers: tokenHeader
+        headers: tokenHeader()
       })
     } else {
       // 新增
       res = await addTremInfo(formData.value, {
-        headers: tokenHeader
+        headers: tokenHeader()
       })
     }
     if (res.code === 401) {
@@ -240,7 +240,7 @@ const handleSubmit = async () => {
 const endTrem = async (id: number) => {
   console.log(id);
   const res = await endCurTermById(id, {
-    headers: tokenHeader
+    headers: tokenHeader()
   })
   handleResponse(res, async () => {
     notification.success({ message: '结束选课', description: '当前选课已结束' })
@@ -253,7 +253,7 @@ const endTrem = async (id: number) => {
 const deleteTrem = async (id: number) => {
   const res = await deleteTermById({
     query: { id: '' + id },
-    headers: tokenHeader
+    headers: tokenHeader()
   })
   handleResponse(res, () => {
     notification.success({ message: '删除选课', description: '删除选课信息成功' })

@@ -97,7 +97,7 @@ const init = async (page = 1) => {
   const res = await findByPage({
     params: { module: 'major' },
     query: { page: '' + page, limit: '' + 10 },
-    headers: tokenHeader
+    headers: tokenHeader()
   })
   handleResponse(res, () => {
     dataSource.value = res.data.list
@@ -145,13 +145,13 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       // 编辑
       res = await updateMajor(formData.value as Major, {
-        headers: tokenHeader,
+        headers: tokenHeader(),
         params: { module: 'major' }
       })
     } else {
       // 新增
       res = await addMajor(formData.value as Major, {
-        headers: tokenHeader,
+        headers: tokenHeader(),
         params: { module: 'major' }
       })
     }
@@ -167,7 +167,7 @@ const handleSubmit = async () => {
 
 const handleDelete = async (id: string) => {
   const res = await deleteMajorById({
-    headers: tokenHeader,
+    headers: tokenHeader(),
     query: { id },
     params: { module: 'major'}
   })

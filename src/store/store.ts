@@ -1,7 +1,7 @@
 import { defineStore, createPinia } from "pinia";
 import { ROLE, UserInfo } from "../utils/types";
 import router, { dynamicRoutes } from "@/router";
-import { generateRoutes, getAllPaths } from "@/utils";
+import { generateRoutes, getAllPaths, tokenHeader } from "@/utils";
 import { getUserInfo } from "@/api/service/account";
 
 const pinia = createPinia();
@@ -17,7 +17,7 @@ export const useUserStore = defineStore('user', {
   }),
   actions: {
     async getUserInfo(token: string) {
-      return await getUserInfo({query: {token}})
+      return await getUserInfo({query: {token}, headers: tokenHeader()})
     }
   }
 })
@@ -46,5 +46,9 @@ export const useRouterStore = defineStore('router', {
       this.pathList = getAllPaths(router.getRoutes())
 
     },
+    clearRouter() {
+      this.routers = []
+      this.pathList = []
+    }
   }
 })
