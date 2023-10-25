@@ -87,17 +87,14 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       {
         path: '/adminCourse/cur',
         name: 'curCourse',
-        // component: () => import('@/views/Course/Current/index.vue'),
-        component: Announce,
+        component: () => import('@/view/course-manage/cur-course.vue'),
 
         meta: { roles: [ROLE.Admin], title: '当前课程信息'}
       },
       {
         path: '/adminCourse/history',
         name: 'historyCourse',
-        // component: () => import('@/views/Course/History/index.vue'),
-        component: Announce,
-
+        component: () => import('@/view/course-manage/history.vue'),
         meta: { roles: [ROLE.Admin], title: '历史课程信息' }
       }
     ]

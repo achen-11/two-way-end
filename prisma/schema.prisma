@@ -114,6 +114,7 @@ model Term {
 model Course {
   id        Int    @id @default(autoincrement())
   course_id String
+  name      String // 课程名称
   link      String // 链接
   week_num  String // 周次
   score     Int // 学分
@@ -124,7 +125,7 @@ model Course {
   type        String // 类型?
   address     String // 授课教室
   course_time String // 授课时间
-  targetNum   String // 限选人数
+  target_num   String // 限选人数
 
   majorLimit CourseMaojrLimit[] // 专业限制
   StageLimit StageLimit[] // 年级限制
