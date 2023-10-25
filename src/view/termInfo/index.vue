@@ -34,7 +34,8 @@
   </div>
   <div class="mt-4">
     <h3>历史选课</h3>
-    <a-table :dataSource="dataSource" :columns="columns" :pagination="pageOpt" :scroll="{y: 400}">
+    <a-table :dataSource="dataSource" :columns="columns" :pagination="pagination" :scroll="{y: 400}"
+      :loading="historyLoading" @change="handleTableChange">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'academic'">
           {{ record.academic_start }} - {{ record.academic_end }} 第{{ record.semester === 1 ? '一' : '二' }}学期
@@ -137,23 +138,38 @@ const columns = [
 ]
 
 // 历史
-const page = ref(1)
-const limit = ref(10)
 const dataSource = ref([])
+const pagination = {
+  current: 1,
+  pageSize: 10,
+  total: 0,
+}
+const historyLoading = ref(false)
 // 初始化
 const init = async () => {
   const curRes = await getCurTermInfo()
   if (curRes.code === 200 && curRes.data) {
     curDataSource.value = [curRes.data]
+  } else {
+    curDataSource.value = []
   }
+  historyLoading.value = true
   const historyRes = await getHistoryTermInfo({
-    query: { page: '' + page.value, limit: '' + limit.value }
+    query: { page: '' + pagination.current, limit: '' + pagination.pageSize }
   })
-  if (historyRes.code === 200) {
-    dataSource.value = historyRes.data
-  }
+  historyLoading.value = false
+  handleResponse(historyRes,()=>{
+    dataSource.value = historyRes.data.list
+    pagination.total = historyRes.data.total
+  })
+
 }
 init()
+const handleTableChange = (pag)=>{
+  pagination.current = pag.current
+  pagination.pageSize = pag.pageSize
+  init()
+}
 
 // 新增 & 编辑 表单
 const drawerOpen = ref(false)
@@ -260,12 +276,5 @@ const deleteTrem = async (id: number) => {
     init()
   })
 }
-
-
-// 历史选课分页器
-const pageOpt = reactive({
-  current: 1,
-  total: 0
-})
 
 </script>

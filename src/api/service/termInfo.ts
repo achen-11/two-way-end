@@ -25,18 +25,22 @@ export const getCurTermInfo = Api(
  */
 export const getHistoryTermInfo = Api(
   Get('/termInfo/history'),
-  Query<{page: string, limit: string}>(),
+  Query<{ page: string, limit: string }>(),
   async () => {
     const ctx = useContext()
-    const {page=1, limit=10} = ctx.query
-    const data =  await prisma.term.findMany({
+    const { page = 1, limit = 10 } = ctx.query
+    const data = await prisma.term.findMany({
       where: {
         status: false
       },
-      skip: (page - 1) * limit, // 要跳过的记录数
+      skip: (Number(page) - 1) * Number(limit), // 要跳过的记录数
       take: +limit, // 要获取的记录数
     })
-    return successRsp(data)
+    const total = await prisma.term.count({ where: { status: false }, })
+    return successRsp({
+      list: data,
+      total, page, limit
+    })
   }
 );
 
@@ -48,7 +52,7 @@ export const addTremInfo = Api(
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async (formData: TermInfo) => {
-    const {academic, semester, exhibitStage,firstStage, secondStage, thirdStage} = formData
+    const { academic, semester, exhibitStage, firstStage, secondStage, thirdStage } = formData
     try {
       // 查询是否有正在进行的选课
       const isProcessing = await prisma.term.findFirst({
@@ -56,7 +60,7 @@ export const addTremInfo = Api(
           status: true
         }
       })
-      if(isProcessing) {
+      if (isProcessing) {
         return failRsp('存在正在进行中的选课, 请先结束当前选课')
       }
       const res = await prisma.term.create({
@@ -64,8 +68,8 @@ export const addTremInfo = Api(
           academic_start: dayjs(academic[0]).get('year'),
           academic_end: dayjs(academic[1]).get('year'),
           semester,
-          exhibit_stage_start:exhibitStage[0],
-          exhibit_stage_end:exhibitStage[1],
+          exhibit_stage_start: exhibitStage[0],
+          exhibit_stage_end: exhibitStage[1],
           first_stage_start: firstStage[0],
           first_stage_end: firstStage[1],
           second_stage_start: secondStage[0],
@@ -91,16 +95,16 @@ export const updateTremInfo = Api(
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async (formData: TermInfo) => {
-    const {academic, semester, exhibitStage,firstStage, secondStage, thirdStage, id} = formData
+    const { academic, semester, exhibitStage, firstStage, secondStage, thirdStage, id } = formData
     try {
       const res = await prisma.term.update({
-        where: { id: id},
+        where: { id: id },
         data: {
           academic_start: dayjs(academic[0]).get('year'),
           academic_end: dayjs(academic[1]).get('year'),
           semester,
-          exhibit_stage_start:exhibitStage[0],
-          exhibit_stage_end:exhibitStage[1],
+          exhibit_stage_start: exhibitStage[0],
+          exhibit_stage_end: exhibitStage[1],
           first_stage_start: firstStage[0],
           first_stage_end: firstStage[1],
           second_stage_start: secondStage[0],
@@ -110,7 +114,7 @@ export const updateTremInfo = Api(
         }
       })
       return successRsp(res)
-    } catch(e) {
+    } catch (e) {
       return failRsp(e)
     }
   }
@@ -146,7 +150,7 @@ export const endCurTermById = Api(
 */
 export const deleteTermById = Api(
   Delete('/termInfo'),
-  Query<{id: string}>(),
+  Query<{ id: string }>(),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async () => {
