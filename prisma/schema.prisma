@@ -39,7 +39,7 @@ model Student {
   id_card  String // 身份证
   type     Int // 0-本科 1-专升本
   class_id Int
-  is_delay  Boolean // 是否延毕
+  is_delay Boolean // 是否延毕
 
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
@@ -125,10 +125,10 @@ model Course {
   type        String // 类型?
   address     String // 授课教室
   course_time String // 授课时间
-  target_num   String // 限选人数
+  target_num  Int // 限选人数
 
   majorLimit CourseMaojrLimit[] // 专业限制
-  StageLimit StageLimit[] // 年级限制
+  stageLimit StageLimit[] // 年级限制
 
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
@@ -154,11 +154,11 @@ model CourseMaojrLimit {
 
 // 阶段限选
 model StageLimit {
-  id         Int    @id @default(autoincrement())
-  stage      Int // 阶段 0 1 2 3
-  grad_limit Int // 年级 1 2 3 4 
-  course_id  Int // 课程id
-  course     Course @relation(fields: [course_id], references: [id])
+  id        Int    @id @default(autoincrement())
+  stage     Int // 阶段 0 1 2 3
+  grade     Int // 年级 1 2 3 4 
+  course_id Int // 课程id
+  course    Course @relation(fields: [course_id], references: [id])
 
   @@map("stage_grade_limit")
 }

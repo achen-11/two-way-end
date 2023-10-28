@@ -77,3 +77,21 @@ export const downloadExcel = (buffer: ArrayBuffer, name: string) => {
   a.download = name;
   a.click();
 }
+
+/**
+ * 处理课程数据的 majorLimits 和 stageLimits
+ */
+export const formatCourse = (course) => {
+  course.major_limits = course.majorLimit.map(item => item.major_id)
+  course.grade_limits_exhibit = []
+  course.grade_limits_first = []
+  course.grade_limits_second = []
+  course.grade_limits_third = []
+  course.stageLimit.forEach(item => {
+    if (item.stage === 0) return course.grade_limits_exhibit.push(item.grade)
+    if (item.stage === 1) return course.grade_limits_first.push(item.grade)
+    if (item.stage === 2) return course.grade_limits_second.push(item.grade)
+    if (item.stage === 3) return course.grade_limits_third.push(item.grade)
+  })
+  return course
+}

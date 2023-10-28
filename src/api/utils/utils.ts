@@ -1,6 +1,13 @@
 import { ExcelColumn } from '@/utils/types'
 import Excel from 'exceljs'
 
+/**
+ * 请求异常响应格式化
+ * @param message 异常信息
+ * @param code 异常 code
+ * @param data 数据
+ * @returns 
+ */
 export const failRsp = (message: string, code=400, data={}) => {
   return {
     data,
@@ -9,6 +16,13 @@ export const failRsp = (message: string, code=400, data={}) => {
   }
 }
 
+/**
+ * 请求成功响应格式化
+ * @param data 响应数据
+ * @param message 请求信息
+ * @param code 响应码
+ * @returns 
+ */
 export const successRsp = (data: any, message="success", code=200) => {
   return {
     data,
@@ -17,6 +31,12 @@ export const successRsp = (data: any, message="success", code=200) => {
   }
 }
 
+/**
+ * 将数据转换成 excel 并导出
+ * @param data 需要导出数据
+ * @param columns excel 表头
+ * @returns 文件流 buffer
+ */
 export const exportExcel = async <T>(data: T[], columns: ExcelColumn[]) => {
   // 创建 workbook
   const workbook = new Excel.Workbook()
