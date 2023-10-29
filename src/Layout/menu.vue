@@ -20,7 +20,8 @@ const items = computed(() => {
     routes.forEach(route => {
       if (route.meta.hidden) return // 隐藏
       if (!route.children && !isSub) return // 没有子路由, pass
-      if (route.children?.length === 1) {
+      const noHiddenChildNum = route.children?.filter(child => !child.meta.hidden)?.length
+      if (noHiddenChildNum === 1) {
         // 有子路由, 且数量为1, 则为一级路由
         const { meta, path } = route.children[0];
         if (meta.hidden) return
@@ -30,7 +31,7 @@ const items = computed(() => {
           icon: meta?.icon,
         }
         res.push(item);
-      } else if (route.children?.length >= 2) {
+      } else if (noHiddenChildNum >= 2) {
         // 有子路由, 且数量大于1, 则为多级路由
         const { meta, children, path } = route;
         const item = {
