@@ -204,11 +204,11 @@ model Selection {
 model Announce {
   id           Int      @id @default(autoincrement())
   title        String
-  content      String
+  content      String   @db.Text
   department   String
-  click_num    Int
-  status       Int
-  publish_time DateTime
+  click_num    Int      @default(0)
+  status       Boolean  @default(true)
+  publish_time DateTime @default(now())
 
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt

@@ -60,7 +60,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         path: '/student/student',
         name: 'student',
         component: () => import('@/view/student-manage/index.vue'),
-        meta: { roles: [ROLE.Admin], title: "学生管理"}
+        meta: { roles: [ROLE.Admin], title: "学生管理" }
       }
     ]
   },
@@ -74,7 +74,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       path: '/teacher',
       name: 'teacher',
       component: () => import('@/view/teacher-manage/index.vue'),
-      meta: { roles: [ROLE.Admin], title: "教师管理"}
+      meta: { roles: [ROLE.Admin], title: "教师管理" }
     }]
   },
   // Admin-课程管理
@@ -89,7 +89,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: 'curCourse',
         component: () => import('@/view/course-manage/cur-course.vue'),
 
-        meta: { roles: [ROLE.Admin], title: '当前课程信息'}
+        meta: { roles: [ROLE.Admin], title: '当前课程信息' }
       },
       {
         path: '/adminCourse/history',
@@ -97,6 +97,39 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         component: () => import('@/view/course-manage/history.vue'),
         meta: { roles: [ROLE.Admin], title: '历史课程信息' }
       }
+    ]
+  },
+  // Admin-通知管理
+  {
+    path: '/announce',
+    name: 'announce',
+    component: Layout,
+    meta: { roles: [ROLE.Admin], title: '通知管理' },
+    children: [
+      {
+        path: '/announce/modal',
+        name: 'modalAnnounce',
+        component: () => import('@/view/announce/modal.vue'),
+        meta: { roles: [ROLE.Admin], title: "弹窗通知管理" }
+      },
+      {
+        path: '/announce/list',
+        name: 'announce',
+        component: () => import('@/view/announce/index.vue'),
+        meta: { roles: [ROLE.Admin], title: "通知管理" }
+      },
+      {
+        path: '/announce/detail',
+        name: 'announceDetail',
+        component: () => import('@/view/announce/detail.vue'),
+        meta: { roles: [ROLE.Admin], title: "通知详情", hidden: true }
+      },
+      {
+        path: '/announce/preview',
+        name: 'announcePreview',
+        component: () => import('@/view/announce/preview.vue'),
+        meta: { roles: [ROLE.Admin], title: "通知预览", hidden: true }
+      },
     ]
   },
 ]

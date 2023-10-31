@@ -16,6 +16,8 @@
     "@midwayjs/rpc": "^3.1.0",
     "@midwayjs/serve": "^3.1.0",
     "@prisma/client": "3.8.1",
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "next",
     "ant-design-vue": "^4.0.3",
     "axios": "^1.5.0",
     "dayjs": "^1.11.10",

@@ -5,7 +5,7 @@ import { jwtMiddleWare } from '@/api/middle/jwt';
 
 
 // 模块白名单
-const modules = ['major', 'class', 'student', 'teacher']
+const modules = ['major', 'class', 'student', 'teacher', 'announce']
 
 
 /**
@@ -29,7 +29,7 @@ export const create = Api(
       })
       return successRsp(res)
     } catch (e) {
-      return failRsp(e)
+      return failRsp(e.message)
     }
   }
 )
@@ -52,7 +52,7 @@ export const list = Api(
       let _where = {}
       if (where) {
         where = JSON.parse(where)
-        if (where?.name) _where['name'] = { contains: where.name}
+        if (where?.name) _where['name'] = { contains: where.name }
         if (where?.teacher_id) _where['teacher_id'] = { contains: where.teacher_id }
       }
       // 分页获取数据
@@ -63,7 +63,7 @@ export const list = Api(
       })
       const total = await prisma[module].count({ where: _where })
       return successRsp({ list: result, total, page, limit })
-    } catch(e) {
+    } catch (e) {
       return failRsp(e.message)
     }
   }
