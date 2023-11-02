@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from "vue-router"
+import { RouteRecordRaw, useRouter } from "vue-router"
 import { ROLE } from "./types"
 import dayjs from "dayjs";
 import { notification } from "ant-design-vue";
@@ -51,6 +51,9 @@ export const dateTimeFormat = (date)=>{
 export const handleResponse = (response: any, fn: Function, errorFn?: Function) =>{
   if (response.code === 401) {
     notification.error({message: '身份校验异常', description: JSON.stringify(response.message)})
+    localStorage.removeItem('token')
+    const router = useRouter()
+    router.push('/login')
   } else if (response.code === 200) {
     fn()
   } else if (errorFn) {

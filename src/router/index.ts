@@ -19,16 +19,17 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     path: '/',
     component: Layout,
     name: 'Root',
+    redirect: '/index',
     meta: { title: '首页' },
     children: [
       {
-        path: '/',
+        path: '/index',
         name: 'announce-stu',
         component: () => import('@/view/announce/student-index.vue'),
         meta: { roles: [ROLE.Student], title: "通知公告" }
       },
       {
-        path: '/',
+        path: '/index',
         name: 'termInfo',
         component: () => import('@/view/termInfo/index.vue'),
         meta: { roles: [ROLE.Admin], title: "选课信息" }
@@ -64,12 +65,12 @@ export const dynamicRoutes: RouteRecordRaw[] = [
   },
   // Admin-教师信息管理
   {
-    path: '/',
+    path: '/teacher',
     name: 'teacher',
     component: Layout,
     meta: { roles: [ROLE.Admin], title: '教师信息管理' },
     children: [{
-      path: '/teacher',
+      path: '/teacher/manage',
       name: 'teacher',
       component: () => import('@/view/teacher-manage/index.vue'),
       meta: { roles: [ROLE.Admin], title: "教师管理" }
@@ -136,10 +137,31 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       },
     ]
   },
+  {
+    path: '/404Page',
+    name: '404Page',
+    component: () => import('@/view/404.vue'),
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/404Page',
+    meta: { roles: [ROLE.Admin, ROLE.Student, ROLE.Teacher], hidden: true }
+  },
 ]
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes: routes.concat(dynamicRoutes)
 })
+
+// reset router
+export function resetRouter() {
+  router.getRoutes().forEach((route) => {
+    const { name } = route
+    if (name) {
+      router.hasRoute(name) && router.removeRoute(name)
+    }
+  })
+}
+
 export default router

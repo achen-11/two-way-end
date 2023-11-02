@@ -44,7 +44,7 @@ import { reactive, computed } from 'vue';
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
 import { login } from '@/api/service/account';
 import { notification } from 'ant-design-vue';
-import { useUserStore } from '@/store/store';
+import { useRouterStore, useUserStore } from '@/store/store';
 import { useRouter } from 'vue-router';
 import { UserInfo } from '@/utils/types';
 
@@ -61,6 +61,7 @@ const formState = reactive<FormState>({
 
 const userStore = useUserStore()
 const router = useRouter()
+const routerStore = useRouterStore()
 const handleSubmit = async () => {
   console.log(formState);
   const res = await login(formState.username, formState.password, formState.remember)
@@ -71,6 +72,9 @@ const handleSubmit = async () => {
     localStorage.setItem('token', token)
     // set userInfo
     userStore.userInfo = userInfo
+    routerStore.setRouter(userInfo.role)
+    sessionStorage.setItem('userInfo', JSON.stringify(userInfo))
+    // 设置动态路由
     router.push('/')
   } else {
     notification.error({message: '登录异常', description: res.message})
