@@ -30,14 +30,13 @@ import '@wangeditor/editor/dist/css/style.css' // 引入 css
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 import { ref, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
-import { create as createAnnounce,  } from '@/api/service/[module]/crud'
+import { create as createAnnounce, } from '@/api/service/[module]/crud'
 import { detail as getAnnounceDetail, update as updateAnnounce } from '@/api/service/announce'
 import { handleResponse, tokenHeader } from '@/utils';
 import { notification } from 'ant-design-vue';
 
 const param = 'announce'
-const formData = ref({
-  id: null, 
+const formData = ref<{ id?: number, title: string, content: string, department: string }>({
   title: '',
   content: '',
   department: '',
@@ -60,7 +59,7 @@ const init = async () => {
     })
   } else {
     isEdit.value = false
-    formData.value = { id: null, title: '', content: '', department: '', }
+    formData.value = { title: '', content: '', department: '', }
   }
 }
 init()
@@ -90,11 +89,11 @@ const addAnnounce = async () => {
 }
 
 const editAnnounce = async () => {
-  
+
   const res = await updateAnnounce(formData.value.id, formData.value, {
     headers: tokenHeader(),
   })
-  handleResponse(res,()=>{
+  handleResponse(res, () => {
     notification.success({ message: '通知公告', description: '操作成功' })
     init()
   })

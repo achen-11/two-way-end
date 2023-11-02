@@ -96,6 +96,7 @@ const getAnnounceList = async () => {
   })
   handleResponse(res, () => {
     dataSource.value = res.data.list
+    pagination.total = res.data.total
   })
   loading.value = false
 }

@@ -1,8 +1,6 @@
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
 
 import Layout from '@/Layout/layout.vue'
-import Announce from '@/view/announce/index.vue'
-import Login from '@/view/login/index.vue'
 import { ROLE } from '@/utils/types'
 
 
@@ -25,8 +23,8 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: '/',
-        name: 'announce',
-        component: Announce,
+        name: 'announce-stu',
+        component: () => import('@/view/announce/student-index.vue'),
         meta: { roles: [ROLE.Student], title: "通知公告" }
       },
       {
@@ -102,9 +100,9 @@ export const dynamicRoutes: RouteRecordRaw[] = [
   // Admin-通知管理
   {
     path: '/announce',
-    name: 'announce',
+    name: 'announce-admin',
     component: Layout,
-    meta: { roles: [ROLE.Admin], title: '通知管理' },
+    meta: { roles: [ROLE.Admin, ROLE.Student], title: '通知管理' },
     children: [
       {
         path: '/announce/modal',
@@ -114,7 +112,7 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       },
       {
         path: '/announce/list',
-        name: 'announce',
+        name: 'announce-manage',
         component: () => import('@/view/announce/index.vue'),
         meta: { roles: [ROLE.Admin], title: "通知管理" }
       },
@@ -123,6 +121,12 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         name: 'announceDetail',
         component: () => import('@/view/announce/detail.vue'),
         meta: { roles: [ROLE.Admin], title: "通知详情", hidden: true }
+      },
+      {
+        path: '/announce/detail',
+        name: 'announceDetail',
+        component: () => import('@/view/announce/preview.vue'),
+        meta: { roles: [ROLE.Student], title: "通知详情", hidden: true }
       },
       {
         path: '/announce/preview',

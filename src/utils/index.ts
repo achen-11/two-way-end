@@ -48,12 +48,15 @@ export const dateTimeFormat = (date)=>{
 
 /* ================================= Other Utils ================================= */
 // 请求结果处理
-export const handleResponse = (response: any, fn: Function) =>{
+export const handleResponse = (response: any, fn: Function, errorFn?: Function) =>{
   if (response.code === 401) {
     notification.error({message: '身份校验异常', description: JSON.stringify(response.message)})
   } else if (response.code === 200) {
     fn()
-  } else {
+  } else if (errorFn) {
+    errorFn()
+  }
+  else {
     notification.error({message: '请求异常', description: JSON.stringify(response.message)})
   }
 }
