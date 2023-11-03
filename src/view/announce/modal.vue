@@ -126,7 +126,7 @@ const handlePreview = () => {
   modalOpen.value = true
 }
 const handleEdit = () => {
-  router.push('/announce/detail' + `?id=-1`)
+  router.push('/announce/edit' + `?id=-1`)
 }
 const handleOk = () => {
   modalOpen.value = false

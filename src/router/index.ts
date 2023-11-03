@@ -23,17 +23,23 @@ export const dynamicRoutes: RouteRecordRaw[] = [
     meta: { title: '首页' },
     children: [
       {
-        path: '/index',
+        path: '/announce-stu',
         name: 'announce-stu',
         component: () => import('@/view/announce/student-index.vue'),
         meta: { roles: [ROLE.Student], title: "通知公告" }
       },
       {
-        path: '/index',
+        path: '/termInfo',
         name: 'termInfo',
         component: () => import('@/view/termInfo/index.vue'),
         meta: { roles: [ROLE.Admin], title: "选课信息" }
-      }
+      },
+      {
+        path: '/index',
+        name: 'index',
+        component: () => import('@/view/empty.vue'),
+        meta: { roles: [ROLE.Student, ROLE.Admin, ROLE.Teacher], hidden: true }
+      },
     ]
   },
   // Admin-学生信息管理
@@ -118,8 +124,8 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         meta: { roles: [ROLE.Admin], title: "通知管理" }
       },
       {
-        path: '/announce/detail',
-        name: 'announceDetail',
+        path: '/announce/edit',
+        name: 'announceEdit',
         component: () => import('@/view/announce/detail.vue'),
         meta: { roles: [ROLE.Admin], title: "通知详情", hidden: true }
       },
@@ -158,6 +164,7 @@ const router = createRouter({
 export function resetRouter() {
   router.getRoutes().forEach((route) => {
     const { name } = route
+    if (name === 'login') return
     if (name) {
       router.hasRoute(name) && router.removeRoute(name)
     }

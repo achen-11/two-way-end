@@ -147,7 +147,7 @@ const handlePreview = (item) => {
   router.push('/announce/preview' + `?id=${item.id}`)
 }
 const handleEdit = (item) => {
-  router.push('/announce/detail' + `?id=${item.id}`)
+  router.push('/announce/edit' + `?id=${item.id}`)
 }
 
 </script>

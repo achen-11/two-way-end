@@ -24,8 +24,8 @@ export const useUserStore = defineStore('user', {
 
 export const useRouterStore = defineStore('router', {
   state: () => ({
-      routers: [router.getRoutes()],
-      pathList: [getAllPaths(router.getRoutes())],
+      routers: [...router.getRoutes()],
+      pathList: [...getAllPaths(router.getRoutes())],
       isSetDynamicRouter: false
 
   }),
@@ -54,6 +54,9 @@ export const useRouterStore = defineStore('router', {
     clearRouter() {
       this.routers = []
       this.pathList = []
+    },
+    hasRoute(name) {
+      return router.hasRoute(name)
     }
   }
 })

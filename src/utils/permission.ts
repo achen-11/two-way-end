@@ -14,7 +14,7 @@ router.beforeEach(async (to, from, next) => {
     if (!routerStore.isSetDynamicRouter) {
       // 未设置动态路由
       // console.log('未设置动态路由');
-      
+
       const res = await getUserInfo({ query: { token: hasToken }, headers: { 'Authorization': 'two_way_token=' + hasToken } })
       if (res.code === 200) {
         // 设置user/router/cookie
@@ -26,11 +26,11 @@ router.beforeEach(async (to, from, next) => {
           notification.error({ message: res.message, description: res.message })
         }
         localStorage.removeItem('token')
-        next({path: '/login'})
+        next({ path: '/login' })
       }
     }
     // 已设置动态路由
-    
+
     if (to.path === '/login' && routerStore.validateRouter('/')) {
       // 去登录页
       // console.log('登录页, 但跳转了');
@@ -49,8 +49,7 @@ router.beforeEach(async (to, from, next) => {
   } else {
     // 退回登录页
     console.log('没有token, 退回登录');
-    console.log(routerStore.routers);
-    
+
     if (to.path !== '/login') {
       localStorage.removeItem('token')
       next('/login')
