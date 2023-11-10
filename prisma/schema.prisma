@@ -24,7 +24,7 @@ model Class {
   name        String    @unique
   major       Major     @relation(fields: [major_id], references: [id])
   major_id    Int
-  enroll_year String // 入学年份
+  enroll_year Int // 入学年份
   students    Student[]
 
   @@map("class")
@@ -32,14 +32,15 @@ model Class {
 
 // 学生
 model Student {
-  id       Int     @id @default(autoincrement())
-  stu_id   String  @unique // 学号
-  name     String
-  sex      Int
-  id_card  String // 身份证
-  type     Int // 0-本科 1-专升本
-  class_id Int
-  is_delay Boolean // 是否延毕
+  id             Int     @id @default(autoincrement())
+  stu_id         String  @unique // 学号
+  name           String
+  sex            Int
+  id_card        String // 身份证
+  type           Int // 0-本科 1-专升本
+  class_id       Int
+  is_delay       Boolean // 是否延毕
+  only_show_star Boolean @default(false) // 偏好设置-仅展示收藏课程
 
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
@@ -90,7 +91,7 @@ model Account {
 
 // 学年学期表
 model Term {
-  id                  Int         @id @default(autoincrement())
+  id                  Int      @id @default(autoincrement())
   academic_start      Int // 开始学年
   academic_end        Int // 结束学年
   semester            Int // 学期 1/2
@@ -104,8 +105,6 @@ model Term {
   third_stage_end     DateTime
   status              Boolean // true-进行中 false-结束
   Course              Course[]
-  Star                Star[]
-  Selection           Selection[]
 
   @@map("term_info")
 }
@@ -133,10 +132,12 @@ model Course {
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
 
-  term_id   Int
-  term      Term        @relation(fields: [term_id], references: [id])
-  Star      Star[]
-  Selection Selection[]
+  term_id        Int
+  term           Term             @relation(fields: [term_id], references: [id])
+  Star           Star[]
+  Selection      Selection[]
+  StarCount      StarCount[]
+  SelectionCount SelectionCount[]
 
   @@map("course")
 }
@@ -170,13 +171,20 @@ model Star {
   course     Course  @relation(fields: [course_id], references: [id])
   student_id Int
   student    Student @relation(fields: [student_id], references: [id])
-  term_id    Int
-  term       Term    @relation(fields: [term_id], references: [id])
 
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
 
   @@map("star_record")
+}
+
+// 收藏计数表
+model StarCount {
+  course_id Int    @id
+  course    Course @relation(fields: [course_id], references: [id])
+  num       Int
+
+  @@map("star_count")
 }
 
 // 选课情况表
@@ -186,8 +194,6 @@ model Selection {
   course     Course  @relation(fields: [course_id], references: [id])
   student_id Int
   student    Student @relation(fields: [student_id], references: [id])
-  term_id    Int
-  term       Term    @relation(fields: [term_id], references: [id])
 
   will_num Int
   case     String
@@ -198,6 +204,18 @@ model Selection {
   updated_time DateTime @updatedAt
 
   @@map("selection_record")
+}
+
+// 选课计数表
+model SelectionCount {
+  id        Int    @id @default(autoincrement())
+  course_id Int
+  stage     Int // 阶段， 1 2 3
+  status    Int // 状态, 0-待处理 1-选课成功 2-已拒绝
+  num       Int // 数量
+  course    Course @relation(fields: [course_id], references: [id])
+
+  @@map("selection_count")
 }
 
 // 通知表
