@@ -1,8 +1,10 @@
 import { defineStore, createPinia } from "pinia";
-import { ROLE, UserInfo } from "../utils/types";
+import { ROLE, UserInfo, OriTermInfo } from "../utils/types";
 import router, { dynamicRoutes, resetRouter, routes } from "@/router";
-import { generateRoutes, getAllPaths, tokenHeader } from "@/utils";
+import { generateRoutes, getAllPaths, handleResponse, tokenHeader } from "@/utils";
 import { getUserInfo } from "@/api/service/account";
+import { getCurTermInfo } from "@/api/service/termInfo";
+import { getCurrentStage } from "@/utils/termInfo";
 
 const pinia = createPinia();
 export default pinia;
@@ -13,7 +15,10 @@ export const useUserStore = defineStore('user', {
   state: () => ({
     userInfo: {
       
-    } as UserInfo
+    } as UserInfo,
+    userSetting: {
+      onlyShowStar: true
+    }
   }),
   actions: {
     async getUserInfo(token: string) {
@@ -57,6 +62,31 @@ export const useRouterStore = defineStore('router', {
     },
     hasRoute(name) {
       return router.hasRoute(name)
+    }
+  }
+})
+
+export const useTermStore = defineStore('termInfo', {
+  state: () => ({
+    termInfo: {} as OriTermInfo,
+    curStageInfo: { stage: -999, timeRange: [], title: '非选课时间' } as {stage: number, timeRange: string[], title: string, description?: string}
+  }),
+  actions: {
+    // 设置全局选课信息
+    async setTermInfo() {
+      const res =  await getCurTermInfo()
+      const userInfo = useUserStore().userInfo
+      handleResponse(res, ()=>{
+        this.termInfo = res.data
+        const grade = res.data.academic_end - userInfo.class.enroll_year
+        this.curStageInfo = getCurrentStage(res.data)
+        if (grade > 4) {
+          this.curStageInfo.description = '您已毕业, 欢迎回来👏'
+          this.curStageInfo.stage = -999
+        }
+      }, () => {
+        this.curStageInfo = {stage: -999, timeRange: [], title: '非选课时间'}
+      })
     }
   }
 })

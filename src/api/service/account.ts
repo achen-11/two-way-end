@@ -22,8 +22,18 @@ export const login = Api(
       },
       include: {
         adminProfile: true,
-        studentProfile: true,
-        teacerProfile: true
+        teacerProfile: true,
+        studentProfile: {
+          select: {
+            name: true,
+            sex: true,
+            is_delay: true,
+            stu_id: true,
+            type: true,
+            class: true,
+            id: true
+          },
+        }
       }
     })
     // 验证通过

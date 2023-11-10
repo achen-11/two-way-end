@@ -143,6 +143,23 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       },
     ]
   },
+
+  // Student-选课
+  {
+    path: '/two-way',
+    name: 'stuSelect',
+    component: Layout,
+    meta: { roles: [ROLE.Student], title: '双向选课' },
+    children: [
+      {
+        path: '/two-way/select',
+        name: 'selectCourse',
+        component: () => import('@/view/student-select/index.vue'),
+        meta: { roles: [ROLE.Student], title: '双向选课' }
+      }
+    ]
+  },
+  // 404 Page
   {
     path: '/404Page',
     name: '404Page',

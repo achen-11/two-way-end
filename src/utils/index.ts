@@ -41,9 +41,9 @@ export function getAllPaths(routes: RouteRecordRaw[]): string[] {
 
 /* ================================= Format Utils ================================= */
 // 日期格式化-datetime
-export const dateTimeFormat = (date)=>{
+export const dateTimeFormat = (date, format='YYYY-MM-DD HH:mm:ss')=>{
   if (!date) return
-  return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+  return dayjs(date).format(format)
 }
 
 /* ================================= Other Utils ================================= */

@@ -11,7 +11,17 @@ export enum ROLE {
 // 用户信息
 export interface UserInfo {
   name: string;
-  role: ROLE
+  role: ROLE,
+  id:number,
+  /**学生号 */
+  stu_id?:number,
+  class?: {
+    /**入学年份 */
+    enroll_year?: number,
+    /**专业 id */
+    major_id?: number,
+  }
+
 }
 
 // 选课信息
@@ -23,6 +33,22 @@ export interface TermInfo {
   firstStage: Date[]
   secondStage: Date[]
   thirdStage: Date[]
+}
+
+// 原始选课信息
+export interface OriTermInfo {
+  id?: number,
+  academic_start: number,
+  academic_end: number,
+  semester: number,
+  exhibit_stage_start: string,
+  exhibit_stage_end: string,
+  first_stage_start: string,
+  first_stage_end: string,
+  second_stage_start: string,
+  second_stage_end: string,
+  third_stage_start: string,
+  third_stage_end: string
 }
 
 // 专业信息
@@ -38,4 +64,24 @@ export interface ExcelColumn {
   label: string,
   /**列的 key */
   value: string
+}
+
+// 课程查询所需的字段
+export interface FindCourseOption {
+  // ========== 学生信息 ==========
+  /**学生唯一id */
+  student_id:number,
+  /**入学年份 */
+  enroll_year: number,
+  /**专业 id */
+  major_id: number,
+  
+  // ========== 选课信息 ==========
+  
+  /**结束学年 */
+  academic_end: number,
+  /**选课阶段 */
+  stage: number,
+
+
 }

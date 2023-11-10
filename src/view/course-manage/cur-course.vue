@@ -37,7 +37,7 @@
             <span>{{ record.score + ' / ' + record.hour }}</span>
           </template>
           <template v-if="column.key === 'week_num'">
-            <span>{{ `[${record.week_num}] ${record.hour}` }}</span>
+            <span>{{ `[${record.week_num}] ${record.course_time}` }}</span>
           </template>
           <template v-if="column.key === 'option'">
             <a-button type="link" primary @click="open(record)">编辑</a-button>
