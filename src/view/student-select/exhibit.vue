@@ -28,6 +28,9 @@
           <template v-if="column.key === 'week_num'">
             <span>{{ `[${record.week_num}] 周${record.course_time}` }}</span>
           </template>
+          <template v-if="column.key === 'teachers'">
+            <span>{{ record.CourseTeachers.map(i => i?.teacher?.name)?.join("、") }}</span>
+          </template>
           <template v-if="column.key === 'star_num'">
             <span>{{ record.StarCount?.[0]?.num || 0 }}</span>
           </template>
@@ -89,6 +92,11 @@ const columns = [
     dataIndex: 'type',
     key: 'type',
     width: '100px'
+  },
+  {
+    title: '授课教师',
+    dataIndex: 'teachers',
+    key: 'teachers',
   },
   {
     title: '限选人数',

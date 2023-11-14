@@ -29,6 +29,26 @@ const handleMajorLimit = (oldData, newData) => {
   return { removedIds, addedIds }
 }
 
+/**处理教师数据 */
+const handleTeachers = (oldData, newData) => {
+  const removedIds = []
+  const addedIds = []
+  for (const oldItem of oldData) {
+    if (!newData.some(newId => newId === oldItem.teacher_id)) {
+      // 不存在, 则说明被移除了
+      removedIds.push(oldItem.id);
+    }
+  }
+
+  // 遍历新数据, 检查是否有 oldData 中没有的数据
+  for (const newItem of newData) {
+    if (!oldData.some(oldItem => oldItem.teacher_id === newItem)) {
+      addedIds.push(newItem);
+    }
+  }
+  return { removedIds, addedIds }
+}
+
 /**处理阶段限制数据 */
 const handleStageLimit = (oldData, newData) => {
   // oldData: stageLimit [{id, stage, grade, course_id}]
@@ -113,7 +133,12 @@ export const list = Api(
         take: Number(limit),
         include: {
           majorLimit: {},
-          stageLimit: {}
+          stageLimit: {},
+          CourseTeachers: {
+            include: {
+              teacher: true
+            }
+          }
         }
       })
       const total = await prisma.course.count({ where })
@@ -207,12 +232,16 @@ export const create = Api(
     const {
       course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num,
       major_limits, grade_limits_exhibit, grade_limits_first, grade_limits_second, grade_limits_third,
-      term_id
+      term_id, teachers
     } = data
 
     // 专业限制
     const majorLimits = major_limits.map(m => {
       return { major_id: m }
+    })
+    // 授课教师
+    const teacherIds = teachers.map(t => {
+      return { teacher_id: t }
     })
     // 阶段限制
     const gradeLimits = []
@@ -239,6 +268,11 @@ export const create = Api(
             data: majorLimits
           }
         },
+        CourseTeachers: {
+          createMany: {
+            data: teacherIds
+          }
+        },
         stageLimit: {
           createMany: {
             data: gradeLimits
@@ -261,13 +295,16 @@ export const update = Api(
     const {
       course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num,
       major_limits, grade_limits_exhibit, grade_limits_first, grade_limits_second, grade_limits_third,
-      term_id, id, majorLimit, stageLimit
+      term_id, id, majorLimit, stageLimit, CourseTeachers, teachers
     } = data
 
     // 专业限制
     // 对比原来的专业 limit
     const { removedIds: removedMajorIds, addedIds: addedMajorIds } = handleMajorLimit(majorLimit, major_limits)
-    // return successRsp({ removedMajorIds, addedMajorIds, oriMajors: majorLimit, newMajors: major_limits })
+    
+    // 对比原来的教师 
+    const { removedIds: removedTeachers, addedIds: addTeachers } = handleTeachers(CourseTeachers, teachers)
+    // return successRsp({ removedTeachers, addTeachers, oriMajors: CourseTeachers, newMajors: teachers })
 
     // 阶段限制
     const gradeLimits = []
@@ -287,6 +324,12 @@ export const update = Api(
           deleteMany: removedIds.map(m => { return { id: m } }),
           createMany: {
             data: addedIds
+          }
+        },
+        CourseTeachers: {
+          deleteMany: removedTeachers.map(m => { return { id: m } }),
+          createMany: {
+            data: addTeachers.map(t=>{ return { teacher_id: t}})
           }
         }
       },

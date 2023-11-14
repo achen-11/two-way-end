@@ -55,10 +55,11 @@ model Student {
 
 // 教师
 model Teacher {
-  id         Int     @id @default(autoincrement())
-  teacher_id String  @unique // 教工号
-  name       String // 教师名称
-  account    Account @relation(fields: [teacher_id], references: [user_name])
+  id             Int              @id @default(autoincrement())
+  teacher_id     String           @unique // 教工号
+  name           String // 教师名称
+  account        Account          @relation(fields: [teacher_id], references: [user_name])
+  CourseTeachers CourseTeachers[]
 
   @@map("teacher")
 }
@@ -137,9 +138,21 @@ model Course {
   Star           Star[]
   Selection      Selection[]
   StarCount      StarCount[]
-  SelectionCount SelectionCount[]
+  CourseTeachers CourseTeachers[]
 
   @@map("course")
+}
+
+// 课程教师表
+model CourseTeachers {
+  id         Int     @id @default(autoincrement())
+  course_id  Int
+  course     Course  @relation(fields: [course_id], references: [id])
+  teacher_id Int
+  teacher    Teacher @relation(fields: [teacher_id], references: [id])
+
+  @@map("course_teachers")
+
 }
 
 // 专业限选
@@ -204,18 +217,6 @@ model Selection {
   updated_time DateTime @updatedAt
 
   @@map("selection_record")
-}
-
-// 选课计数表
-model SelectionCount {
-  id        Int    @id @default(autoincrement())
-  course_id Int
-  stage     Int // 阶段， 1 2 3
-  status    Int // 状态, 0-待处理 1-选课成功 2-已拒绝
-  num       Int // 数量
-  course    Course @relation(fields: [course_id], references: [id])
-
-  @@map("selection_count")
 }
 
 // 通知表

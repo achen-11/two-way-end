@@ -39,6 +39,9 @@
           <template v-if="column.key === 'week_num'">
             <span>{{ `[${record.week_num}] ${record.course_time}` }}</span>
           </template>
+          <template v-if="column.key === 'teachers'">
+            <span>{{ record.CourseTeachers.map(i => i?.teacher?.name)?.join("、") }}</span>
+          </template>
           <template v-if="column.key === 'option'">
             <a-button type="link" primary @click="open(record)">编辑</a-button>
             <a-popconfirm title="是否确认删除该班级? " @confirm="handleDelete(record.id)">
@@ -80,6 +83,11 @@
         </a-form-item>
         <a-form-item label="课程类型" name="type">
           <a-input v-model:value="formData.type" />
+        </a-form-item>
+        <a-form-item label="授课教师" name="teachers" required>
+          <a-select mode="multiple" v-model:value="formData.teachers" :options="teacherOption"
+            :filter-option="filterOption" show-search>
+          </a-select>
         </a-form-item>
         <a-form-item label="授课地址" name="address" required>
           <a-input v-model:value="formData.address" />
@@ -191,7 +199,19 @@ const getAllMajor = async () => {
   })
 }
 getAllMajor()
-
+/**获取所有教师数据 */
+const teacherOption = ref([])
+const getAllTeacher = async () => {
+  const res = await curdFind({
+    query: { page: '' + 1, limit: '999' },
+    headers: tokenHeader(),
+    params: { module: 'teacher' }
+  })
+  handleResponse(res, () => {
+    teacherOption.value = res.data.list.map(i => { return { label: i.name, value: i.id } })
+  })
+}
+getAllTeacher()
 /**年级限制 */
 const gradeOption = ref([{ label: '大一', value: 1 }, { label: '大二', value: 2 }, { label: '大三', value: 3 }, { label: '大四', value: 4 },])
 /**Table 配置项 */
@@ -224,6 +244,11 @@ const columns = [
     title: '课程类型',
     dataIndex: 'type',
     key: 'type'
+  },
+  {
+    title: '授课教师',
+    dataIndex: 'teachers',
+    key: 'teachers'
   },
   {
     title: '授课地点',
@@ -295,7 +320,7 @@ const handleReset = () => {
 const isEdit = ref(false)
 const formData = ref({
   id: null, course_id: '', name: '', domain: '', type: '', link: '', week_num: '', score: 0, hour: 0,
-  prop: '', address: '', course_time: '', target_num: 0, major_limits: [],
+  prop: '', address: '', course_time: '', target_num: 0, major_limits: [], teachers: [],
   grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
 })
 
@@ -310,7 +335,7 @@ const open = (item = null) => {
     formData.value = {
       id: null,
       course_id: '', name: '', domain: '', type: '', link: '', week_num: '', score: 0, hour: 0,
-      prop: '', address: '', course_time: '', target_num: 0, major_limits: [],
+      prop: '', address: '', course_time: '', target_num: 0, major_limits: [], teachers: [],
       grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
     }
     formData.value = {
@@ -328,6 +353,7 @@ const open = (item = null) => {
       course_time: "六[1-2节]",
       target_num: 200,
       major_limits: [],
+      teachers: [],
       grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
     }
   }
@@ -359,12 +385,12 @@ const handleSubmit = async () => {
 }
 
 // 删除课程
-const handleDelete = async(id)=>{
+const handleDelete = async (id) => {
   const res = await deleteCourse({
     headers: tokenHeader(),
-    query: {id}
+    query: { id }
   })
-  handleResponse(res, ()=>{
+  handleResponse(res, () => {
     notification.success({ message: '删除成功' })
     init()
   })

@@ -49,6 +49,13 @@ export const exhibit = Api(
             where: {
               student_id: student_id
             },
+          },
+          CourseTeachers: {
+            select: {
+              teacher: {
+                select: {name: true}
+              }
+            }
           }
         },
         skip: Number(page - 1) * Number(limit),
@@ -140,5 +147,29 @@ export const unstar = Api(
       }
     })
     return successRsp({})
+  }
+)
+
+/**
+ * 选课
+ */
+export const select = Api(
+  Post(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async (course_id: number, student_id: number) => {
+
+  }
+)
+
+/**
+ * 取消选课
+ */
+export const unselect = Api(
+  Post(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async (course_id: number, student_id: number) => {
+
   }
 )

@@ -85,7 +85,7 @@ export const downloadExcel = (buffer: ArrayBuffer, name: string) => {
 }
 
 /**
- * 处理课程数据的 majorLimits 和 stageLimits
+ * 处理课程数据的 majorLimits \ stageLimits \ teachers
  */
 export const formatCourse = (course) => {
   course.major_limits = course.majorLimit.map(item => item.major_id)
@@ -99,5 +99,6 @@ export const formatCourse = (course) => {
     if (item.stage === 2) return course.grade_limits_second.push(item.grade)
     if (item.stage === 3) return course.grade_limits_third.push(item.grade)
   })
+  course.teachers = course.CourseTeachers.map(item => item.teacher_id)
   return course
 }
