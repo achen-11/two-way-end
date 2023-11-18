@@ -21,6 +21,7 @@
       </div>
       <!-- 选课内容 -->
       <Exhibit v-if="curStageInfo.stage === 0"></Exhibit>
+      <First v-if="curStageInfo.stage === 1 || curStageInfo.stage === 2"></First>
       <no-select :description="curStageInfo.description" v-else="curStageInfo.stage === -999"></no-select>
     </a-spin>
   </div>
@@ -33,6 +34,7 @@ import { ref, toRefs } from 'vue';
 import { notification } from 'ant-design-vue';
 import noSelect from './no-select.vue'
 import Exhibit from './exhibit.vue';
+import First from './first.vue';
 
 // 获取当前选课信息
 const termStore = useTermStore()

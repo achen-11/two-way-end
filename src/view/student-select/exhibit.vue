@@ -32,7 +32,7 @@
             <span>{{ record.CourseTeachers.map(i => i?.teacher?.name)?.join("、") }}</span>
           </template>
           <template v-if="column.key === 'star_num'">
-            <span>{{ record.StarCount?.[0]?.num || 0 }}</span>
+            <span>{{ record.StarCount?.num || 0 }}</span>
           </template>
           <template v-if="column.key === 'option'">
             <!-- <a-button type="link" primary @click="open(record)">编辑</a-button> -->
@@ -53,7 +53,7 @@
 import { useTermStore, useUserStore } from '@/store/store';
 import { FindCourseOption } from '@/utils/types';
 import { reactive, ref, toRefs } from 'vue';
-import { exhibit, star, unstar } from '@/api/service/select'
+import { course, star, unstar } from '@/api/service/select'
 import { handleResponse, tokenHeader } from '@/utils';
 
 const userStore = useUserStore()
@@ -155,7 +155,7 @@ const init = async () => {
     enroll_year: userInfo.value.class.enroll_year,
     student_id: userInfo.value.id
   }
-  const res = await exhibit({
+  const res = await course({
     query: { page: '' + pagination.current, limit: '' + pagination.pageSize, option: JSON.stringify(option) },
     headers: tokenHeader()
   })
@@ -169,19 +169,27 @@ const init = async () => {
 }
 init()
 
+
+const startLoading = ref(false)
 // 收藏课程
 const handleStar = async (course_id: number) => {
+  if (startLoading.value === true) return
+  startLoading.value = true
   const student_id = userInfo.value.id
   const res = await star(course_id, student_id, { headers: tokenHeader() })
   handleResponse(res, () => {
     init()
-  })
+    startLoading.value = false
+  }, () => { startLoading.value = false })
 }
 const handleCancelStar = async (course_id: number) => {
+  if (startLoading.value === true) return
+  startLoading.value = true
   const student_id = userInfo.value.id
   const res = await unstar(course_id, student_id, { headers: tokenHeader() })
   handleResponse(res, () => {
     init()
-  })
+    startLoading.value = false
+  }, () => { startLoading.value = false })
 }
 </script>

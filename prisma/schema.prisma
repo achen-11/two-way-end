@@ -92,7 +92,7 @@ model Account {
 
 // 学年学期表
 model Term {
-  id                  Int      @id @default(autoincrement())
+  id                  Int         @id @default(autoincrement())
   academic_start      Int // 开始学年
   academic_end        Int // 结束学年
   semester            Int // 学期 1/2
@@ -106,6 +106,7 @@ model Term {
   third_stage_end     DateTime
   status              Boolean // true-进行中 false-结束
   Course              Course[]
+  Selection           Selection[]
 
   @@map("term_info")
 }
@@ -133,12 +134,13 @@ model Course {
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
 
-  term_id        Int
-  term           Term             @relation(fields: [term_id], references: [id])
-  Star           Star[]
-  Selection      Selection[]
-  StarCount      StarCount[]
-  CourseTeachers CourseTeachers[]
+  term_id         Int
+  term            Term             @relation(fields: [term_id], references: [id])
+  Star            Star[]
+  Selection       Selection[]
+  StarCount       StarCount?
+  CourseTeachers  CourseTeachers[]
+  selection_count SelectionCount?
 
   @@map("course")
 }
@@ -152,7 +154,6 @@ model CourseTeachers {
   teacher    Teacher @relation(fields: [teacher_id], references: [id])
 
   @@map("course_teachers")
-
 }
 
 // 专业限选
@@ -193,7 +194,7 @@ model Star {
 
 // 收藏计数表
 model StarCount {
-  course_id Int    @id
+  course_id Int    @id @unique
   course    Course @relation(fields: [course_id], references: [id])
   num       Int
 
@@ -209,14 +210,32 @@ model Selection {
   student    Student @relation(fields: [student_id], references: [id])
 
   will_num Int
-  case     String
+  cause    String @db.Text
   status   Int // 状态, 0-待处理 1-选课成功 2-已拒绝
   stage    Int // 阶段， 1 2 3
+  term_id  Int
+  term     Term   @relation(fields: [term_id], references: [id])
 
   created_time DateTime @default(now())
   updated_time DateTime @updatedAt
 
   @@map("selection_record")
+}
+
+// 选课计数表
+model SelectionCount {
+  id                 Int @id @default(autoincrement())
+  course_id          Int @unique @default(0)
+  first_all_num      Int @default(0)
+  first_success_num  Int @default(0)
+  second_all_num     Int @default(0)
+  second_success_num Int @default(0)
+  third_all_num      Int @default(0)
+  third_success_num  Int @default(0)
+
+  course Course @relation(fields: [course_id], references: [id])
+
+  @@map("selection_count")
 }
 
 // 通知表

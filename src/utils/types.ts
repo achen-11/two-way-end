@@ -12,15 +12,17 @@ export enum ROLE {
 export interface UserInfo {
   name: string;
   role: ROLE,
-  id:number,
+  id: number,
   /**学生号 */
-  stu_id?:number,
+  stu_id?: number,
   class?: {
     /**入学年份 */
     enroll_year?: number,
     /**专业 id */
     major_id?: number,
-  }
+  },
+  /* 类型: 专升本 or 本科 */
+  type?: number
 
 }
 
@@ -70,18 +72,44 @@ export interface ExcelColumn {
 export interface FindCourseOption {
   // ========== 学生信息 ==========
   /**学生唯一id */
-  student_id:number,
+  student_id: number,
   /**入学年份 */
   enroll_year: number,
   /**专业 id */
   major_id: number,
-  
+
   // ========== 选课信息 ==========
-  
+
   /**结束学年 */
   academic_end: number,
   /**选课阶段 */
   stage: number,
+}
 
+// 课程记录
+export interface courseRecord {
+  id?: number
+  course_id?: string
+  name?: string
+  link?: string
+  week_num?: string
+  score?: number // 学分
+  hour?: number // 学时
+  prop?: string
+  domain?: string
 
+  type?: string
+  address?: string
+  course_time?: string
+  target_num?: number,
+
+  CourseTeachers?: techerInfo[],
+
+  will_num?: number,
+  cause?: string
+
+}
+
+export interface techerInfo {
+  teacher: {name?: string}
 }

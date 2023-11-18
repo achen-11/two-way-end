@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import isBetween from "dayjs/plugin/isBetween";
 dayjs.extend(isBetween)
 import { OriTermInfo } from "./types";
+import { SelectionCount } from "@prisma/client";
 
 /**
  * 判断当前选课阶段
@@ -54,5 +55,38 @@ export function getCurrentStage(termInfo: OriTermInfo) {
   // 选课结束
   else if (now.isAfter(dayjs(third_stage_end))) {
     return { stage: 999, timeRange: null, title: '选课已结束' }
+  }
+}
+
+/**
+ * 计算当前课程 可选人数
+ * 
+ */
+export function calctTargetNum(target:number, counts: SelectionCount, stage: number) {
+  const {first_success_num=0, second_success_num=0 } = counts
+  if (stage === 1) {
+    // 第一阶段 = target
+    return target
+  } else if (stage === 2) {
+    // 第二阶段已选 = target - first-success 
+    return target - first_success_num
+  } else if (stage === 3) {
+    // 第三阶段已选 = first-success
+    return target - first_success_num - second_success_num
+  }
+}
+
+/**
+ * 返回当前课程已选人数
+ * 
+ */
+export function getSelectedNum(counts: SelectionCount, stage: number) {
+  const {first_all_num=0, second_all_num=0, third_all_num=0} = counts
+  if (stage === 1) {
+    return first_all_num || 0
+  } else if (stage === 2) {
+    return second_all_num
+  } else {
+    return third_all_num
   }
 }
