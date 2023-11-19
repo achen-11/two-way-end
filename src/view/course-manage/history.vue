@@ -8,7 +8,7 @@
   <template v-else>
     <div class="">
       <!-- 学年学期 -->
-      <a-select class="w-[200px]" v-model:value="termId" :options="termOption">
+      <a-select class="w-[200px]" v-model:value="termId" :options="termOption" @change="init()">
       </a-select>
     </div>
     <!-- 筛选 -->
