@@ -159,6 +159,21 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  // Student-选课结果
+  {
+    path: '/stu-select',
+    name: 'stu-select',
+    component: Layout,
+    meta: { roles: [ROLE.Student], title: '选课结果' },
+    children: [
+      {
+        path: '/stu-select/result',
+        name: 'stu-select-result',
+        component: () => import('@/view/student-result/index.vue'),
+        meta: { roles: [ROLE.Student], title: '选课结果' }
+      }
+    ]
+  },
   // 404 Page
   {
     path: '/404Page',

@@ -35,6 +35,10 @@ export const getHistoryTermInfo = Api(
       },
       skip: (Number(page) - 1) * Number(limit), // 要跳过的记录数
       take: +limit, // 要获取的记录数
+      orderBy: [
+        { academic_end: 'desc' },
+        { semester: 'desc' }
+      ]
     })
     const total = await prisma.term.count({ where: { status: false }, })
     return successRsp({
@@ -43,6 +47,22 @@ export const getHistoryTermInfo = Api(
     })
   }
 );
+
+/**
+ * 获取所有选课信息
+ */
+export const getAllTermInfo = Api(
+  Get('/termInfo/all'), // Http Path: /api/hello,
+  async () => {
+    const data = await prisma.term.findMany({
+      orderBy: [
+        { academic_end: 'desc' },
+        { semester: 'desc' }
+      ]
+    })
+    return successRsp(data)
+  }
+)
 
 /**添加选课信息
  * @param termInfo 选课信息

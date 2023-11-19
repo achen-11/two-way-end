@@ -106,7 +106,9 @@ export interface courseRecord {
   CourseTeachers?: techerInfo[],
 
   will_num?: number,
-  cause?: string
+  cause?: string,
+
+  status?: number
 
 }
 
