@@ -7,6 +7,6 @@ export default async (next: any) => {
   try {
     await next()
   } catch (error) {
-    return failRsp(error.message, 401, null)
+    return failRsp(error.message, 500, null)
   }
 }
