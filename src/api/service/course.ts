@@ -301,7 +301,7 @@ export const update = Api(
     // 专业限制
     // 对比原来的专业 limit
     const { removedIds: removedMajorIds, addedIds: addedMajorIds } = handleMajorLimit(majorLimit, major_limits)
-    
+
     // 对比原来的教师 
     const { removedIds: removedTeachers, addedIds: addTeachers } = handleTeachers(CourseTeachers, teachers)
     // return successRsp({ removedTeachers, addTeachers, oriMajors: CourseTeachers, newMajors: teachers })
@@ -329,7 +329,7 @@ export const update = Api(
         CourseTeachers: {
           deleteMany: removedTeachers.map(m => { return { id: m } }),
           createMany: {
-            data: addTeachers.map(t=>{ return { teacher_id: t}})
+            data: addTeachers.map(t => { return { teacher_id: t } })
           }
         }
       },
@@ -361,3 +361,49 @@ export const remove = Api(
   }
 )
 
+/**
+ * 根据课程 id \ 教师 id 获取课程成员
+ */
+export const member = Api(
+  Get(),
+  Query<{ page:string, limit: string, teacher_id: string, course_id: string }>(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async () => {
+    const ctx = useContext()
+    const { teacher_id, course_id, page, limit } = ctx.query
+    const course = await prisma.course.findUnique({
+      where: {
+        id: +course_id
+      },
+      include: {
+        CourseTeachers: {
+          where: {
+            teacher_id: +teacher_id
+          }
+        }
+      }
+    })
+    if (course.CourseTeachers.length === 0) {
+      return failRsp('您不是该课程的授课教师')
+    }
+    const res = await prisma.selection.findMany({
+      where: {
+        course_id: +course_id,
+        status: 1,
+      },
+      include: {
+        student: {},
+      },
+      skip: Number(page - 1) * Number(limit),
+      take: Number(limit),
+    })
+    const total = prisma.selection.count({
+      where: {
+        course_id: +course_id,
+        status: 1
+      }
+    })
+    return successRsp(res)
+  }
+)

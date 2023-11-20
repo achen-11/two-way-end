@@ -174,6 +174,27 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  // Teacher-课程数据
+  {
+    path: '/teacher',
+    name: 'teacher-index',
+    component: Layout,
+    meta: { roles: [ROLE.Teacher], title: '课程管理' },
+    children: [
+      {
+        path: '/teacher/course',
+        name: 'teacher-course',
+        component: () => import('@/view/teacher-course/index.vue'),
+        meta: { roles: [ROLE.Teacher], title: '课程管理' }
+      },
+      {
+        path: '/teacher/member',
+        name: 'teacher-member',
+        component: () => import('@/view/teacher-course/member.vue'),
+        meta: { roles: [ROLE.Teacher], title: '课程成员', hidden: true }
+      }
+    ]
+  },
   // 404 Page
   {
     path: '/404Page',
