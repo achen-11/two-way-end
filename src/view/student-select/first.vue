@@ -189,7 +189,7 @@ const handleReset = () => {
 const init = async () => {
   loading.value = true
   const option: FindCourseOption = {
-    stage: 1,
+    stage: curStageInfo.value.stage,
     academic_end: termInfo.value.academic_end,
     major_id: userInfo.value.class.major_id,
     enroll_year: userInfo.value.class.enroll_year,

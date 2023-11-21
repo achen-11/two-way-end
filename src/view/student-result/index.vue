@@ -62,6 +62,9 @@
           <a-form-item class="mb-2" label="选课理由" name="cause" required>
             <a-textarea v-model:value="formData.cause" :auto-size="{ minRows: 4 }" disabled></a-textarea>
           </a-form-item>
+          <a-form-item class="mb-2" label="选课轮次" name="stage" required>
+            {{ formData.stage }}
+          </a-form-item>
           <a-form-item class="mb-2" label="选课结果" name="status">
               <a-tag v-if="formData.status === 0" color="processing">等待反选</a-tag>
               <a-tag v-if="formData.status === 1" color="success">选课成功</a-tag>
