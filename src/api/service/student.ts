@@ -23,9 +23,10 @@ export const list = Api(
       Object.keys(filterData).forEach((key) => {
         if (keys.includes(key)) {
           if (key === 'class') {
-            where[key] = { class: { name: { contains: filterData[key] } } }
+            where[key] = { name: { contains: filterData[key] } }
           } else if (key === 'major') {
-            where[key] = { major: { name: { contains: filterData[key] } } }
+            if (!where['class']) where['class'] = {}
+            where['class'].major = { name: { contains: filterData[key] } }
           } else {
             where[key] = { contains: filterData[key] }
           }
