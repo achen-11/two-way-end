@@ -361,26 +361,32 @@ const open = (item = null) => {
 }
 
 // 新增 & 编辑
+const formRef = ref()
 const handleSubmit = async () => {
-  if (isEdit.value) {
-    // 编辑
-    const res = await updateCourse({ ...formData.value }, { headers: tokenHeader() })
-    console.log(formData.value);
+  try {
+    await formRef.value.validate()
+    if (isEdit.value) {
+      // 编辑
+      const res = await updateCourse({ ...formData.value }, { headers: tokenHeader() })
+      console.log(formData.value);
 
-    if (res.code === 200) {
-      drawerOpen.value = false
-      init()
-    }
-  } else {
-    // 新增
-    console.log(formData.value);
-    const res = await addCourse({ ...formData.value, term_id: termId.value }, { headers: tokenHeader() })
-    if (res.code === 200) {
-      drawerOpen.value = false
-      init()
+      if (res.code === 200) {
+        drawerOpen.value = false
+        init()
+      }
     } else {
-      notification.error({ message: '添加课程异常', description: res.message })
+      // 新增
+      console.log(formData.value);
+      const res = await addCourse({ ...formData.value, term_id: termId.value }, { headers: tokenHeader() })
+      if (res.code === 200) {
+        drawerOpen.value = false
+        init()
+      } else {
+        notification.error({ message: '添加课程异常', description: res.message })
+      }
     }
+  } catch(e) {
+
   }
 }
 
