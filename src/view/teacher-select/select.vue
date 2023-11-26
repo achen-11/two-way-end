@@ -69,33 +69,33 @@
     </div>
     <!-- Drawer -->
     <a-drawer v-model:open="drawerOpen" title="反选" width="400" placement="right" :maskClosable="false">
-        <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }" layout="horizontal">
-          <a-form-item class="mb-2" label="学生姓名" name="course_time">
-            <div class="border-b pb-1">{{ formData.name }}</div>
-          </a-form-item>
-          <a-form-item class="mb-2" label="学号" name="course_time">
-            <div class="border-b pb-1">{{ formData.stu_id }}</div>
-          </a-form-item>
-          <a-form-item class="mb-2" label="性别" name="sex">
-            <div class="border-b pb-1">{{ formData.sex === 0 ? '女' : '男' }}</div>
-          </a-form-item>
-          <a-form-item class="mb-2" label="班级" name="class_name">
-            <div class="border-b pb-1">{{ formData?.class?.name }}</div>
-          </a-form-item>
-          <a-form-item class="mb-2" label="意向分" name="will_num" required>
-            <a-slider v-model:value="formData.will_num" :min="0" :max="10" disabled />
-          </a-form-item>
-          <a-form-item class="mb-2" label="选课理由" name="cause" required>
-            <a-textarea v-model:value="formData.cause" :auto-size="{ minRows: 4 }" disabled></a-textarea>
-          </a-form-item>
-          <a-form-item class="mb-2" label="选课结果" name="status">
-              <a-tag v-if="formData.status === 0" color="processing">等待反选</a-tag>
-              <a-tag v-if="formData.status === 1" color="success">已同意</a-tag>
-              <a-tag v-if="formData.status === 2" color="error">已拒绝</a-tag>
-          </a-form-item>
+      <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }" layout="horizontal">
+        <a-form-item class="mb-2" label="学生姓名" name="course_time">
+          <div class="border-b pb-1">{{ formData.name }}</div>
+        </a-form-item>
+        <a-form-item class="mb-2" label="学号" name="course_time">
+          <div class="border-b pb-1">{{ formData.stu_id }}</div>
+        </a-form-item>
+        <a-form-item class="mb-2" label="性别" name="sex">
+          <div class="border-b pb-1">{{ formData.sex === 0 ? '女' : '男' }}</div>
+        </a-form-item>
+        <a-form-item class="mb-2" label="班级" name="class_name">
+          <div class="border-b pb-1">{{ formData?.class?.name }}</div>
+        </a-form-item>
+        <a-form-item class="mb-2" label="意向分" name="will_num" required>
+          <a-slider v-model:value="formData.will_num" :min="0" :max="10" disabled />
+        </a-form-item>
+        <a-form-item class="mb-2" label="选课理由" name="cause" required>
+          <a-textarea v-model:value="formData.cause" :auto-size="{ minRows: 4 }" disabled></a-textarea>
+        </a-form-item>
+        <a-form-item class="mb-2" label="选课结果" name="status">
+          <a-tag v-if="formData.status === 0" color="processing">等待反选</a-tag>
+          <a-tag v-if="formData.status === 1" color="success">已同意</a-tag>
+          <a-tag v-if="formData.status === 2" color="error">已拒绝</a-tag>
+        </a-form-item>
 
-        </a-form>
-      </a-drawer>
+      </a-form>
+    </a-drawer>
   </div>
 </template>
 
@@ -107,8 +107,7 @@ import { useRoute } from 'vue-router';
 import { student as getMembers, reverse as reverseStu } from '@/api/service/select'
 import { notification } from 'ant-design-vue';
 import { detail as findDetail } from '@/api/service/course'
-import { calctTargetNum } from '@/utils/termInfo';
-import { courseRecord } from '@/utils/types';
+
 
 const route = useRoute()
 const courseId = +route.query.course_id
@@ -352,15 +351,15 @@ const mutilReverse = async (status: number) => {
 const drawerOpen = ref(false)
 const formRef = ref()
 const formData = ref<{
-  name?: string, 
-  will_num?:number, 
-  status?: number, 
-  cause?: string, 
-  class?: {name: string},
+  name?: string,
+  will_num?: number,
+  status?: number,
+  cause?: string,
+  class?: { name: string },
   sex?: number,
   stu_id?: string
 }>({})
-const open = async (item?: { } | null) => {
+const open = async (item?: {} | null) => {
   formData.value = { ...item }
   drawerOpen.value = true
 }

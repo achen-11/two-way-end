@@ -366,7 +366,7 @@ export const remove = Api(
  */
 export const member = Api(
   Get(),
-  Query<{ page:string, limit: string, teacher_id: string, course_id: string }>(),
+  Query<{ page: string, limit: string, teacher_id: string, course_id: string }>(),
   Middleware([jwtMiddleWare]),
   Headers<{ Authorization: string }>(),
   async () => {
@@ -393,18 +393,26 @@ export const member = Api(
         status: 1,
       },
       include: {
-        student: {},
+        student: {
+          select: { 
+            name: true, sex: true, is_delay: true, stu_id: true,
+            class: { select: { name: true } } 
+          }
+        },
       },
       skip: Number(page - 1) * Number(limit),
       take: Number(limit),
     })
-    const total = prisma.selection.count({
+    const total = await prisma.selection.count({
       where: {
         course_id: +course_id,
         status: 1
       }
     })
-    return successRsp(res)
+    return successRsp({
+      list: res,
+      total
+    })
   }
 )
 
