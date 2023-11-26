@@ -39,11 +39,12 @@
             <span>{{ getSelectedNum(record.selection_count, curStageInfo.stage) }}</span>
           </template>
           <template v-if="column.key === 'option'">
-            <a-button type="link" @click="open(record)" v-if="!record?.Selection?.length">选课</a-button>
+            <a-button type="link" @click="open(record)" v-if="isSelected(record) === null">选课</a-button>
             <!-- <a-button type="link" primary @click="open(record)">编辑</a-button> -->
-            <a-popconfirm title="是否确认取消选课? " @confirm="handleCancelSelect(record)" v-else>
+            <a-popconfirm title="是否确认取消选课? " @confirm="handleCancelSelect(record)" v-else-if="isSelected(record) === 0">
               <a-button type="text" danger>取消选课</a-button>
             </a-popconfirm>
+            <a-tag color="success" v-else-if="isSelected(record) === 1">选课成功</a-tag>
           </template>
         </template>
       </a-table>
@@ -94,6 +95,7 @@ import { course, select, unselect } from '@/api/service/select'
 import { handleResponse, tokenHeader } from '@/utils';
 import { calctTargetNum, getSelectedNum } from '@/utils/termInfo'
 import { notification } from 'ant-design-vue';
+import { Selection } from '@prisma/client';
 
 const userStore = useUserStore()
 const termStore = useTermStore()
@@ -251,7 +253,7 @@ const handleSelect = async () => {
       init()
       drawerOpen.value = false
       submitLoading.value = false
-      notification.success({message: '选课', description: '选课成功'})
+      notification.success({ message: '选课', description: '选课成功' })
     })
   } catch (e) {
     submitLoading.value = false
@@ -268,7 +270,17 @@ const handleCancelSelect = async (record) => {
   const res = await unselect(id, student_id, stage, status, { headers: tokenHeader() })
   handleResponse(res, () => {
     init()
-    notification.success({message: '取消选课', description: '取消选课成功'})
+    notification.success({ message: '取消选课', description: '取消选课成功' })
   })
+}
+
+/* 判断是否已选 */
+const isSelected = (record) => {
+  const selections: Selection[] = record?.Selection || []
+  const success_record = selections.filter(s => s.status === 1)
+  const wait_record = selections.filter(s => s.status === 0)
+  if (success_record.length > 0) return 1
+  if (wait_record.length > 0) return 0
+  return null
 }
 </script>

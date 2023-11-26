@@ -63,7 +63,7 @@ export function getCurrentStage(termInfo: OriTermInfo) {
  * 
  */
 export function calctTargetNum(target:number, counts: SelectionCount, stage: number) {
-  const {first_success_num=0, second_success_num=0 } = counts
+  const {first_success_num=0, second_success_num=0 } = counts || {}
   if (stage === 1) {
     // 第一阶段 = target
     return target
@@ -81,7 +81,7 @@ export function calctTargetNum(target:number, counts: SelectionCount, stage: num
  * 
  */
 export function getSelectedNum(counts: SelectionCount, stage: number) {
-  const {first_all_num=0, second_all_num=0, third_all_num=0} = counts
+  const {first_all_num=0, second_all_num=0, third_all_num=0} = counts || {}
   if (stage === 1) {
     return first_all_num || 0
   } else if (stage === 2) {
