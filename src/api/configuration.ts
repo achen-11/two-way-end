@@ -8,20 +8,22 @@ import errorHandle from './middle/errorHandle'
  * setup midway server
  */
 export default createConfiguration({
-  imports: [Koa, jwt, redis, hooks({
-    middleware: [logger, errorHandle]
-  })],
+  imports: [
+    Koa, jwt, 
+    // redis,
+    hooks({ middleware: [logger, errorHandle] })
+],
   importConfigs: [{ 
     default: { 
       keys: 'session_keys',
-      redis: {
-        client: {
-          port: 6379, // Redis port
-          host: "127.0.0.1", // Redis host
-          password: "123123",
-          db: 0,
-        },
-      },
+      // redis: {
+      //   client: {
+      //     port: 6379, // Redis port
+      //     host: "127.0.0.1", // Redis host
+      //     password: "123123",
+      //     db: 0,
+      //   },
+      // },
      },
   }],
 });
