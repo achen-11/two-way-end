@@ -407,3 +407,36 @@ export const member = Api(
     return successRsp(res)
   }
 )
+
+/**
+ * 根据课程 id \ 教师 id 获取课程信息
+ */
+export const detail = Api(
+  Get(),
+  Query<{ teacher_id: string, course_id: string }>(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async () => {
+    const ctx = useContext()
+    const { teacher_id, course_id, page, limit } = ctx.query
+    // 课程归属校验
+    const course = await prisma.course.findUnique({
+      where: {
+        id: +course_id
+      },
+      include: {
+        CourseTeachers: {
+          where: {
+            teacher_id: +teacher_id
+          }
+        },
+        selection_count: {}
+      }
+    })
+    if (course.CourseTeachers.length === 0) {
+      return failRsp('您不是该课程的授课教师')
+    } else {
+      return successRsp(course)
+    }
+  }
+)

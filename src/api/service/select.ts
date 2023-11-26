@@ -16,7 +16,7 @@ const getCurTermInfo = async () => {
 }
 
 /**
- * 分页获取展示阶段课程
+ * 分页获取课程
  */
 export const course = Api(
   Get(),
@@ -52,7 +52,7 @@ export const course = Api(
         include: {
           StarCount: {}, // 收藏人数
           Star: { where: { student_id: student_id }, }, // 是否有收藏记录
-          Selection: {
+          Selection: { // 该学生的该门课程的选课记录
             where: {
               student_id,
               OR: [
@@ -305,5 +305,152 @@ export const unselect = Api(
       data: updateContent
     })
     return successRsp(res, "取消成功")
+  }
+)
+
+
+/**
+ * 获取反选学生列表
+ */
+export const student = Api(
+  Get(),
+  Query<{ page: string, limit: string, stage: string, course_id: string, teacher_id: string, option?: string }>(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async () => {
+    const ctx = useContext()
+    const { stage, course_id, page, limit, teacher_id, option='{}' } = ctx.query
+    // 校验课程归属
+    const course = await prisma.course.findUnique({
+      where: {
+        id: +course_id
+      },
+      include: {
+        CourseTeachers: {
+          where: {
+            teacher_id: +teacher_id
+          }
+        }
+      }
+    })
+    if (course.CourseTeachers.length === 0) {
+      return failRsp('您不是该课程的授课教师')
+    }
+    const filterData = JSON.parse(option)
+    let stuWhere = {}
+    let AllWhere = {}
+    const keys = ['name', 'stu_id', 'major', 'class', 'status']
+    Object.keys(filterData).forEach((key) => {
+      if (keys.includes(key)) {
+        if (key === 'class') {
+          stuWhere[key] = { name: { contains: filterData[key] } }
+        } else if (key === 'major') {
+          if (!stuWhere['class']) stuWhere['class'] = {}
+          stuWhere['class'].major = { name: { contains: filterData[key] } }
+        } else if (key === 'status'  && filterData?.status !== null) {
+          AllWhere['status'] = filterData['status']
+        } else {
+          stuWhere[key] = { contains: filterData[key] }
+        }
+      }
+    })
+    if (Object.keys(stuWhere).length > 0){
+      AllWhere['student'] = stuWhere
+    }
+    // 获取选课记录
+    const res = await prisma.selection.findMany({
+      where: {
+        stage: +stage,
+        course_id: +course_id,
+        ...AllWhere
+      },
+      include: { student: { include: { class: { select: { name: true } } } } },
+      skip: Number(page - 1) * Number(limit),
+      take: Number(limit),
+    })
+    const wait_num = await prisma.selection.count({
+      where: {
+        stage: +stage, course_id: +course_id, status: 0
+      }
+    })
+    const total = await prisma.selection.count({ where: { stage: +stage, course_id: +course_id, ...AllWhere } })
+    return successRsp({ list: res, total, wait_num })
+  }
+)
+
+
+/**
+ * 教师反选
+ */
+export const reverse = Api(
+  Post(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async (course_id: number, selection_ids: { id: number, status: number }[], status: number, stage: number) => {
+    // 校验
+    const course = await prisma.course.findFirst({
+      where: {
+        id: course_id,
+      },
+      include: {
+        Selection: {
+          where: {status: 1},
+          select: {id: true}
+        }
+      }
+    })
+    const canSelectNum = course.target_num - course.Selection.length
+    if (canSelectNum === 0 && status === 1) return failRsp('超出可选人数限制')
+    
+    const res = await prisma.selection.updateMany({
+      where: {
+        id: { in: selection_ids.map(item => item.id) }
+      },
+      data: {
+        status
+      }
+    })
+    if (status === 1) {
+      // 同意
+      let confirmIds = selection_ids.filter(i=>i.status !== 1)
+      let countUpdateContent
+      if (stage === 1) {
+        countUpdateContent = {
+          first_success_num: { increment: confirmIds.length }
+        }
+      } else if (stage === 2) {
+        countUpdateContent = {
+          second_success_num: { increment: confirmIds.length }
+        }
+      }
+      // 如果是同意, 需要更新 selection_count
+      await prisma.selectionCount.updateMany({
+        where: {
+          course_id: course_id
+        },
+        data: countUpdateContent
+      })
+    } else if (status === 2) {
+      // 拒绝
+      const rejectIds = selection_ids.filter(i=>i.status === 1)
+      let countUpdateContent
+      if (stage === 1) {
+        countUpdateContent = {
+          first_success_num: { decrement: rejectIds.length }
+        }
+      } else if (stage === 2) {
+        countUpdateContent = {
+          second_success_num: { decrement: rejectIds.length}
+        }
+      }
+      // 原本同意的, 需要更新计数
+      await prisma.selectionCount.updateMany({
+        where: {
+          course_id: course_id
+        },
+        data: countUpdateContent
+      })
+    }
+    return successRsp(res, '反选成功')
   }
 )

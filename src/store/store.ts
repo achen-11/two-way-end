@@ -4,7 +4,7 @@ import router, { dynamicRoutes, resetRouter, routes } from "@/router";
 import { generateRoutes, getAllPaths, handleResponse, tokenHeader } from "@/utils";
 import { getUserInfo } from "@/api/service/account";
 import { getCurTermInfo } from "@/api/service/termInfo";
-import { getCurrentStage } from "@/utils/termInfo";
+import { getCurrentStage, getCurrentTeacherStage } from "@/utils/termInfo";
 
 const pinia = createPinia();
 export default pinia;
@@ -84,6 +84,16 @@ export const useTermStore = defineStore('termInfo', {
           this.curStageInfo.description = '您已毕业, 欢迎回来👏'
           this.curStageInfo.stage = -999
         }
+      }, () => {
+        this.curStageInfo = {stage: -999, timeRange: [], title: '非选课时间'}
+      })
+    },
+    async setTeacherTermInfo() {
+      const res = await getCurTermInfo()
+      const userInfo = useUserStore().userInfo
+      handleResponse(res, ()=>{
+        this.termInfo = res.data
+        this.curStageInfo = getCurrentTeacherStage(res.data)
       }, () => {
         this.curStageInfo = {stage: -999, timeRange: [], title: '非选课时间'}
       })

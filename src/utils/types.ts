@@ -108,6 +108,7 @@ export interface courseRecord {
   will_num?: number,
   cause?: string,
 
+  stage?: number,
   status?: number
 
 }

@@ -93,7 +93,6 @@ export const dynamicRoutes: RouteRecordRaw[] = [
         path: '/adminCourse/cur',
         name: 'curCourse',
         component: () => import('@/view/course-manage/cur-course.vue'),
-
         meta: { roles: [ROLE.Admin], title: '当前课程信息' }
       },
       {
@@ -143,37 +142,6 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       },
     ]
   },
-
-  // Student-选课
-  {
-    path: '/two-way',
-    name: 'stuSelect',
-    component: Layout,
-    meta: { roles: [ROLE.Student], title: '双向选课' },
-    children: [
-      {
-        path: '/two-way/select',
-        name: 'selectCourse',
-        component: () => import('@/view/student-select/index.vue'),
-        meta: { roles: [ROLE.Student], title: '双向选课' }
-      }
-    ]
-  },
-  // Student-选课结果
-  {
-    path: '/stu-select',
-    name: 'stu-select',
-    component: Layout,
-    meta: { roles: [ROLE.Student], title: '选课结果' },
-    children: [
-      {
-        path: '/stu-select/result',
-        name: 'stu-select-result',
-        component: () => import('@/view/student-result/index.vue'),
-        meta: { roles: [ROLE.Student], title: '选课结果' }
-      }
-    ]
-  },
   // Teacher-课程数据
   {
     path: '/teacher',
@@ -195,6 +163,49 @@ export const dynamicRoutes: RouteRecordRaw[] = [
       }
     ]
   },
+  // Student-选课
+  {
+    path: '/two-way',
+    name: 'two-way-select',
+    component: Layout,
+    meta: { roles: [ROLE.Student, ROLE.Teacher], title: '双向选课' },
+    children: [
+      {
+        path: '/two-way/select',
+        name: 'selectCourse',
+        component: () => import('@/view/student-select/index.vue'),
+        meta: { roles: [ROLE.Student], title: '双向选课' }
+      },
+      {
+        path: '/two-way/teacher-course',
+        name: 'teacher-select-course',
+        component: () => import('@/view/teacher-select/index.vue'),
+        meta: {roles: [ROLE.Teacher], title: '双向选课'}
+      },
+      {
+        path: '/two-way/teacher-select',
+        name: 'teacher-select',
+        component: () => import('@/view/teacher-select/select.vue'),
+        meta: {roles: [ROLE.Teacher], title: '双向选课', hidden: true}
+      }
+    ]
+  },
+  // Student-选课结果
+  {
+    path: '/stu-select',
+    name: 'stu-select',
+    component: Layout,
+    meta: { roles: [ROLE.Student], title: '选课结果' },
+    children: [
+      {
+        path: '/stu-select/result',
+        name: 'stu-select-result',
+        component: () => import('@/view/student-result/index.vue'),
+        meta: { roles: [ROLE.Student], title: '选课结果' }
+      }
+    ]
+  },
+
   // 404 Page
   {
     path: '/404Page',
