@@ -188,7 +188,7 @@ export const select = Api(
           },
           include: {
             course: {
-              select: { course_id: true }
+              select: { course_id: true, week_num: true, course_time: true }
             }
           }
         }
@@ -198,6 +198,8 @@ export const select = Api(
       where: { id: course_id },
       select: {
         course_id: true,
+        week_num: true,
+        course_time: true,
         majorLimit: { select: { major_id: true, } },
         stageLimit: { select: { stage: true, grade: true } },
       }
@@ -231,7 +233,19 @@ export const select = Api(
     if (!historySelectedValidate) {
       return failRsp('您已修读过该课程')
     }
-    // 6. 校验人数限制 (第三轮)
+    // 6. 周次限制
+    const allWeekNumTag = []
+    stuInfo.Selection.forEach(s => {
+      if (s.term_id === termInfo.id && s.status !== 2) {
+        allWeekNumTag.push(s.course.week_num + s.course.course_time)
+      }
+    })
+    console.log('allWeekNum', allWeekNumTag, courseInfo.week_num);
+    
+    if (allWeekNumTag.includes(courseInfo.week_num+courseInfo.course_time)) {
+      return failRsp('授课时间冲突! 您有同一授课时间(周次+授课时间)的课程, 不能重复选择')
+    }
+    // 7. 校验人数限制 (第三轮)
     // const selected_person_num = getSelectedNum()
 
     // 校验通过 写入
