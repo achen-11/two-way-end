@@ -4,6 +4,7 @@ import { prisma } from "../utils/prisma";
 import { FindCourseOption } from "@/utils/types";
 import { failRsp, successRsp } from "../utils/utils";
 import { getStuSelectedNum, validateHistorySelected, validateTrem } from "../utils/select";
+import { Selection } from "@prisma/client";
 
 
 // 获取当前选课信息
@@ -319,7 +320,7 @@ export const student = Api(
   Headers<{ Authorization: string }>(),
   async () => {
     const ctx = useContext()
-    const { stage, course_id, page, limit, teacher_id, option='{}' } = ctx.query
+    const { stage, course_id, page, limit, teacher_id, option = '{}' } = ctx.query
     // 校验课程归属
     const course = await prisma.course.findUnique({
       where: {
@@ -347,14 +348,14 @@ export const student = Api(
         } else if (key === 'major') {
           if (!stuWhere['class']) stuWhere['class'] = {}
           stuWhere['class'].major = { name: { contains: filterData[key] } }
-        } else if (key === 'status'  && filterData?.status !== null) {
+        } else if (key === 'status' && filterData?.status !== null) {
           AllWhere['status'] = filterData['status']
         } else {
           stuWhere[key] = { contains: filterData[key] }
         }
       }
     })
-    if (Object.keys(stuWhere).length > 0){
+    if (Object.keys(stuWhere).length > 0) {
       AllWhere['student'] = stuWhere
     }
     // 获取选课记录
@@ -394,14 +395,14 @@ export const reverse = Api(
       },
       include: {
         Selection: {
-          where: {status: 1},
-          select: {id: true}
+          where: { status: 1 },
+          select: { id: true }
         }
       }
     })
     const canSelectNum = course.target_num - course.Selection.length
     if (canSelectNum === 0 && status === 1) return failRsp('超出可选人数限制')
-    
+
     const res = await prisma.selection.updateMany({
       where: {
         id: { in: selection_ids.map(item => item.id) }
@@ -412,7 +413,7 @@ export const reverse = Api(
     })
     if (status === 1) {
       // 同意
-      let confirmIds = selection_ids.filter(i=>i.status !== 1)
+      let confirmIds = selection_ids.filter(i => i.status !== 1)
       let countUpdateContent
       if (stage === 1) {
         countUpdateContent = {
@@ -432,7 +433,7 @@ export const reverse = Api(
       })
     } else if (status === 2) {
       // 拒绝
-      const rejectIds = selection_ids.filter(i=>i.status === 1)
+      const rejectIds = selection_ids.filter(i => i.status === 1)
       let countUpdateContent
       if (stage === 1) {
         countUpdateContent = {
@@ -440,7 +441,7 @@ export const reverse = Api(
         }
       } else if (stage === 2) {
         countUpdateContent = {
-          second_success_num: { decrement: rejectIds.length}
+          second_success_num: { decrement: rejectIds.length }
         }
       }
       // 原本同意的, 需要更新计数
@@ -452,5 +453,81 @@ export const reverse = Api(
       })
     }
     return successRsp(res, '反选成功')
+  }
+)
+
+
+/**
+ * 自动补选
+ */
+let autoLoading = false
+export const auto = Api(
+  Post(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async (stage: number) => {
+    if (autoLoading === true) {
+      return failRsp('自动补选中, 请勿重复点击')
+    }
+    autoLoading = true
+    // 获取所有课程
+    const termInfo = await getCurTermInfo()
+    const courseArr = await prisma.course.findMany({
+      where: {
+        term_id: termInfo.id
+      },
+      select: {
+        target_num: true,
+        id: true,
+        Selection: {
+          where: { stage: { lte: stage } }
+        }
+      }
+    })
+    const res = []
+    for (let i = 0; i < courseArr.length; i++) {
+      const course = courseArr[i];
+      const target = course.target_num
+      const successArr = course.Selection.filter(s => s.status === 1)
+      const waitArr = course.Selection.filter(s => s.status === 0 && s.stage === stage)
+      const handleNum = target - successArr.length
+      // 根据 时间 \ 意向分 \ 理由字数排序
+      waitArr.sort((a, b) => {
+        // Weight for each field
+        var timeWeight = 1;
+        var scoreWeight = 1;
+        var reasonWeight = 1;
+
+        // 根据权重计算分数
+        function calculateScore(item: Selection) {
+          return (
+            timeWeight * (1 / new Date(item.created_time).getTime()) +
+            scoreWeight * item.will_num +
+            reasonWeight * Math.min(item.cause.length, 300)
+          );
+        }
+
+        // Compare scores for sorting
+        var scoreA = calculateScore(a);
+        var scoreB = calculateScore(b);
+
+        return scoreB - scoreA;
+      })
+      const successIds = waitArr.slice(0, handleNum).map(i => i.id)
+      // 同意
+      await prisma.selection.updateMany({
+        where: { id: { in: successIds } },
+        data: { status: 1 }
+      })
+      const rejectIds = waitArr.slice(handleNum).map(i => i.id)
+      await prisma.selection.updateMany({
+        where: { id: { in: rejectIds } },
+        data: { status: 2 }
+      })
+      res.push({ course_id: course.id, successIds, rejectIds })
+    }
+    // res.push(courseArr)
+    autoLoading = false
+    return successRsp(res, '操作中..')
   }
 )

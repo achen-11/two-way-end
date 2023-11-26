@@ -1,10 +1,12 @@
 <template>
-  <div class="my-2">
-    <a-button type="primary" @click="open()">新增选课</a-button>
+  <div class="grid md:grid-cols-12 gap-4">
+    <a-button type="primary" @click="open()" class="ml-2 md:ml-0 col-span-2">新增选课</a-button>
+    <a-button type="primary" class="ml-2 col-span-3" @click="autoSelect(1)">第一轮选课自动补选</a-button>
+    <a-button type="primary" class="ml-2 col-span-3" @click="autoSelect(2)">第二轮选课自动补选</a-button>
   </div>
-  <div class="mt-2">
-    <h3>当前选课</h3>
-    <a-table :dataSource="curDataSource" :columns="columns" :pagination="false">
+  <div class="">
+    <h3 class="my-4">当前选课</h3>
+    <a-table :dataSource="curDataSource" :columns="columns" :pagination="false" :scroll="{ y: 410, x: 'max-content' }">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'academic'">
           {{ record.academic_start }} - {{ record.academic_end }} 第{{ record.semester === 1 ? '一' : '二' }}学期
@@ -33,8 +35,8 @@
     </a-table>
   </div>
   <div class="mt-4">
-    <h3>历史选课</h3>
-    <a-table :dataSource="dataSource" :columns="columns" :pagination="pagination" :scroll="{y: 400}"
+    <h3 class="my-4">历史选课</h3>
+    <a-table :dataSource="dataSource" :columns="columns" :pagination="pagination" :scroll="{ y: 410, x: 'max-content' }"
       :loading="historyLoading" @change="handleTableChange">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'academic'">
@@ -100,6 +102,7 @@ import { reactive, ref } from 'vue';
 import { dateTimeFormat, handleResponse, tokenHeader } from '@/utils'
 import { getCurTermInfo, getHistoryTermInfo, addTremInfo, endCurTermById, deleteTermById, updateTremInfo } from '@/api/service/termInfo'
 import { notification } from 'ant-design-vue';
+import { auto as autoSelectStu } from '@/api/service/select'
 import dayjs from 'dayjs';
 
 // 当前
@@ -134,6 +137,7 @@ const columns = [
     title: '操作',
     dataIndex: '',
     key: 'option',
+    fixed: 'right'
   }
 ]
 
@@ -158,14 +162,14 @@ const init = async () => {
     query: { page: '' + pagination.current, limit: '' + pagination.pageSize }
   })
   historyLoading.value = false
-  handleResponse(historyRes,()=>{
+  handleResponse(historyRes, () => {
     dataSource.value = historyRes.data.list
     pagination.total = historyRes.data.total
   })
 
 }
 init()
-const handleTableChange = (pag)=>{
+const handleTableChange = (pag) => {
   pagination.current = pag.current
   pagination.pageSize = pag.pageSize
   init()
@@ -194,7 +198,7 @@ const open = (item = null, isDisabled = false) => {
   } else {
     if (curDataSource.value.length === 1) {
       notification.warn({
-        message: '警告⚠️',
+        message: '新增选课⚠️',
         description: '当前存在进行中的选课，请结束后新增！',
         duration: 2
       })
@@ -274,6 +278,16 @@ const deleteTrem = async (id: number) => {
   handleResponse(res, () => {
     notification.success({ message: '删除选课', description: '删除选课信息成功' })
     init()
+  })
+}
+
+// 自动补选
+const autoSelect = async (stage: number) => {
+  const res = await autoSelectStu(stage, {
+    headers: tokenHeader()
+  })
+  handleResponse(res, ()=>{
+    notification.success({ message: '自动补选', description: '自动补选已发起' })
   })
 }
 
