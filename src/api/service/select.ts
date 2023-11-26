@@ -519,6 +519,18 @@ export const auto = Api(
         where: { id: { in: successIds } },
         data: { status: 1 }
       })
+      // 同意的需要更新计数
+      let updateContent
+      if (stage === 1) {
+        updateContent = { first_success_num: { increment: successIds.length } }
+      } else if (stage === 2) {
+        updateContent = { second_success_num: { increment: successIds.length } }
+      }
+      await prisma.selectionCount.updateMany({
+        where: { course_id: course.id },
+        data: updateContent
+      })
+      // 其他的需要拒绝
       const rejectIds = waitArr.slice(handleNum).map(i => i.id)
       await prisma.selection.updateMany({
         where: { id: { in: rejectIds } },
