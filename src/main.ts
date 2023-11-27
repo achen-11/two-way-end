@@ -22,3 +22,5 @@ app.use(router)
 import '@/utils/permission' // 鉴权
 
 app.mount('#app');
+
+console.log = function () {}

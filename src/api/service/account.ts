@@ -3,10 +3,17 @@ import { prisma } from '../utils/prisma';
 import { JwtService } from '@midwayjs/jwt';
 import md5 from 'md5'
 import { failRsp, successRsp } from '../utils/utils'
-import { ROLE } from '../../utils/types';
+
 import { jwtMiddleWare } from '../middle/jwt';
 
-
+enum ROLE {
+  /**管理员 */
+  Admin = 'Admin',
+  /**教师 */
+  Teacher = 'teacher',
+  /**学生 */
+  Student = 'student'
+}
 export const login = Api(
   Post('/account'),
   async (account: string, password: string, isRember = false) => {

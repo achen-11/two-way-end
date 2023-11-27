@@ -2,7 +2,7 @@ import { Api, ContentType, Delete, Get, Headers, Middleware, Params, Post, Put, 
 import { prisma } from '@/api/utils/prisma';
 import { exportExcel, failRsp, successRsp } from '@/api/utils/utils';
 import { jwtMiddleWare } from '@/api/middle/jwt';
-import { ExcelColumn } from '@/utils/types';
+import { ExcelColumn } from '@/api/utils/types';
 
 
 /**

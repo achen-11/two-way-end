@@ -2,7 +2,7 @@ import { Api, Delete, Get, Headers, Middleware, Post, Put, Query, useContext } f
 import { prisma } from '../utils/prisma';
 import { failRsp, successRsp } from '../utils/utils';
 import { jwtMiddleWare } from '../middle/jwt';
-import { TermInfo } from '@/utils/types';
+import { TermInfo } from '@/api/utils/types';
 import dayjs from 'dayjs';
 
 /**获取当前选课信息

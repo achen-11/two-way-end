@@ -1,7 +1,7 @@
 import { Api, Get, Headers, Middleware, Post, Query, useContext } from "@midwayjs/hooks";
 import { jwtMiddleWare } from "../middle/jwt";
 import { prisma } from "../utils/prisma";
-import { FindCourseOption } from "@/utils/types";
+import { FindCourseOption } from "@/api/utils/types";
 import { failRsp, successRsp } from "../utils/utils";
 
 

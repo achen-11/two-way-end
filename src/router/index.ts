@@ -1,7 +1,14 @@
 import { RouteRecordRaw, createRouter, createWebHashHistory } from 'vue-router'
 
 import Layout from '@/Layout/layout.vue'
-import { ROLE } from '@/utils/types'
+enum ROLE {
+  /**管理员 */
+  Admin = 'Admin',
+  /**教师 */
+  Teacher = 'teacher',
+  /**学生 */
+  Student = 'student'
+}
 
 
 export const routes: RouteRecordRaw[] = [

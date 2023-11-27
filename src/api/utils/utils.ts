@@ -1,4 +1,4 @@
-import { ExcelColumn } from '@/utils/types'
+import { ExcelColumn } from '@/api/utils/types'
 import Excel from 'exceljs'
 
 /**
