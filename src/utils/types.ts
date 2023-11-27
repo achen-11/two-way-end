@@ -14,7 +14,8 @@ export interface UserInfo {
   role: ROLE,
   id: number,
   /**学生号 */
-  stu_id?: number,
+  stu_id?: string,
+  teacher_id?: string,
   class?: {
     /**入学年份 */
     enroll_year?: number,

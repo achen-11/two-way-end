@@ -21,11 +21,11 @@
         </a-form-item>
 
         <a-form-item>
-          <div class="flex justify-between">
+          <div class="flex justify-between items-center text-xs">
             <a-form-item name="remember" no-style>
               <a-checkbox v-model:checked="formState.remember">记住我</a-checkbox>
             </a-form-item>
-            <a class="login-form-forgot text-xs" href="">忘记密码?</a>
+            <a-button type="link" class="login-form-forgot text-sm" @click="showModal" >忘记密码?</a-button>
           </div>
         </a-form-item>
 
@@ -37,16 +37,28 @@
         </a-form-item>
       </a-form>
     </div>
+    <a-modal title="重置密码" v-model:open="modalVisible" @ok="handleOk" centered>
+        <div class="text-red-400 my-4">校验通过后, 密码将重置为身份证号后六位</div>
+        <a-form :model="resetData" ref="resetFormRef" :label-col="{ span: 5 }">
+          <a-form-item label="学号" name="stu_id" required>
+            <a-input v-model:value="resetData.stu_id"></a-input>
+          </a-form-item>
+          <a-form-item label="身份证" name="id_card" required>
+            <a-input v-model:value="resetData.id_card"></a-input>
+          </a-form-item>
+        </a-form>
+    </a-modal>
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive, computed } from 'vue';
+import { reactive, computed, ref } from 'vue';
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
-import { login } from '@/api/service/account';
+import { login, reset as resetPassword } from '@/api/service/account';
 import { notification } from 'ant-design-vue';
 import { useRouterStore, useUserStore } from '@/store/store';
 import { useRouter } from 'vue-router';
 import { UserInfo } from '@/utils/types';
+import { handleResponse, tokenHeader } from '@/utils';
 
 interface FormState {
   username: string;
@@ -84,7 +96,36 @@ const handleSubmit = async () => {
 const disabled = computed(() => {
   return !(formState.username && formState.password);
 });
+
+// 重置密码
+const modalVisible = ref(false)
+const resetFormRef = ref()
+const resetData = ref<{stu_id?: string, id_card?: string}>({
+})
+const showModal = () =>{
+  modalVisible.value = true
+  resetData.value = {
+    stu_id: '190374146'
+   }
+}
+
+
+const handleOk = async () => {
+  try {
+    await resetFormRef.value.validate()
+    const  {stu_id, id_card} = resetData.value
+    const res = await resetPassword(stu_id, id_card)
+    handleResponse(res, ()=>{
+      notification.success({message: '重置密码', description: res.data})
+      modalVisible.value = false
+    })
+  } catch(e) {
+
+  }
+}
 </script>
+
+
 <style scoped>
 #components-form-demo-normal-login .login-form {
   max-width: 300px;
