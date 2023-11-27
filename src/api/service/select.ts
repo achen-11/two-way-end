@@ -29,27 +29,43 @@ export const course = Api(
     let { page = 1, limit = 10, option = '{}' } = useContext().query
     // 学生信息
     option = JSON.parse(option)
-    const { major_id, academic_end, enroll_year, stage, student_id } = option as FindCourseOption
+    const {
+      major_id, academic_end, enroll_year, stage, student_id, only_star,
+      // filterData,
+    } = option as FindCourseOption
     if (major_id === null || academic_end === null || enroll_year === null || stage === null) {
       return failRsp('参数缺失, 请刷新或退出登录后重试')
     }
     // 计算年级 Grade
     const grade = academic_end - enroll_year
+    const whereContent = {
+      NOT: {
+        // 两个限制满足其一 (NOT需要用OR)
+        OR: [
+          // 阶段限制中不能包含该 年级 和 阶段 
+          { stageLimit: { some: { AND: [{ stage: stage }, { grade: grade }] } }, },
+          // 专业限制中不能包含该专业
+          { majorLimit: { some: { major_id: major_id } } }
+        ]
+      },
+      // term 限制 - 当前选课
+      term: { status: true },
+    }
+    if (only_star) {
+      whereContent['Star'] = {
+        some: { student_id }
+      }
+    }
+    // 添加 filter 查询条件
+    const filterKeys = ['course_id', 'name', 'domain', 'type']
+    filterKeys.forEach(key => {
+      if (option[key]) {
+        whereContent[key] = { contains: option[key] }
+      }
+    })
     try {
       const data = await prisma.course.findMany({
-        where: {
-          NOT: {
-            // 两个限制满足其一 (NOT需要用OR)
-            OR: [
-              // 阶段限制中不能包含该 年级 和 阶段 
-              { stageLimit: { some: { AND: [{ stage: stage }, { grade: grade }] } }, },
-              // 专业限制中不能包含该专业
-              { majorLimit: { some: { major_id: major_id } } }
-            ]
-          },
-          // term 限制 - 当前选课
-          term: { status: true },
-        },
+        where: whereContent,
         include: {
           StarCount: {}, // 收藏人数
           Star: { where: { student_id: student_id }, }, // 是否有收藏记录
@@ -69,20 +85,12 @@ export const course = Api(
         take: Number(limit),
       })
       const total = await prisma.course.count({
-        where: {
-          NOT: {
-            // 阶段限制中不能包含该 年级 和 阶段 
-            stageLimit: { some: { AND: [{ stage: stage }, { grade: grade }] } },
-            // 专业限制中不能包含该专业
-            majorLimit: { some: { major_id: major_id } }
-          },
-          // term 限制 - 当前选课
-          term: { status: true },
-        }
+        where: whereContent
       })
       return successRsp({
         list: data,
-        total
+        total,
+        whereContent
       })
     } catch (e) {
       return failRsp(e.message, 500)
@@ -282,7 +290,7 @@ export const select = Api(
       updateContent = { second_all_num: { increment: 1 }, }
     } else if (stage === 3) {
       createContent = { course_id: course_id, third_all_num: 1 }
-      updateContent = { third_all_num: { increment: 1 }, third_success_num: {increment: 1} }
+      updateContent = { third_all_num: { increment: 1 }, third_success_num: { increment: 1 } }
     }
     await prisma.selectionCount.upsert({
       create: createContent,

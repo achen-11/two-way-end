@@ -11,6 +11,11 @@
         <a-button class="ml-2" type="primary" @click="init()">搜索</a-button>
       </div>
     </div>
+    <div class="my-2">
+      <a-checkbox class="col-span-3 flex items-center" v-model:checked="filterData.only_star" @change="init">
+        仅展示收藏课程
+      </a-checkbox>
+    </div>
     <div class="my-4 font-[700]">限选门数: {{ limitNum === Infinity ? '无限制' : limitNum }}</div>
     <!-- table -->
     <div class="mt-4">
@@ -21,7 +26,10 @@
             <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
           </template>
           <template v-if="column.key === 'course_id'">
-            <a :href="record.link" target="_blank">{{ `[${record.course_id}] ${record.name}` }}</a>
+            <a :href="record.link" target="_blank">
+              <StarFilled class="text-yellow-400" v-if="record?.Star?.length" />
+              {{ `[${record.course_id}] ${record.name}` }}
+            </a>
           </template>
           <template v-if="column.key === 'score'">
             <span>{{ record.score + ' / ' + record.hour }}</span>
@@ -160,10 +168,11 @@ const handleTableChange = (pag) => {
 }
 
 /**筛选 */
-const filterData = ref({ course_id: '', name: '', domain: '', type: '', term_id: null })
-const handleReset = () => {
-  filterData.value = { course_id: '', name: '', domain: '', type: '', term_id: null }
-}
+const filterData = ref<{
+  course_id?: string, name?: string, domain?: string, type?: string, only_star: boolean
+}>({ only_star: false })
+
+const handleReset = () => { filterData.value = { only_star: false } }
 
 // 获取课程
 const init = async () => {
@@ -173,7 +182,9 @@ const init = async () => {
     academic_end: termInfo.value.academic_end,
     major_id: userInfo.value.class.major_id,
     enroll_year: userInfo.value.class.enroll_year,
-    student_id: userInfo.value.id
+    student_id: userInfo.value.id,
+    only_star: filterData.value.only_star,
+    ...filterData.value
   }
   const res = await course({
     query: { page: '' + pagination.current, limit: '' + pagination.pageSize, option: JSON.stringify(option) },
@@ -228,19 +239,20 @@ const handleSelect = async (record) => {
 
   }
 }
-/* 取消选课 */
-const handleCancelSelect = async (record) => {
-  const { id, Selection } = record
-  const student_id = userInfo.value.id
-  const stage = curStageInfo.value.stage
-  const status = Selection.find(s => s.stage === stage)?.status
 
-  const res = await unselect(id, student_id, stage, status, { headers: tokenHeader() })
-  handleResponse(res, () => {
-    init()
-    notification.success({ message: '取消选课', description: '取消选课成功' })
-  })
-}
+// /* 取消选课 */
+// const handleCancelSelect = async (record) => {
+//   const { id, Selection } = record
+//   const student_id = userInfo.value.id
+//   const stage = curStageInfo.value.stage
+//   const status = Selection.find(s => s.stage === stage)?.status
+
+//   const res = await unselect(id, student_id, stage, status, { headers: tokenHeader() })
+//   handleResponse(res, () => {
+//     init()
+//     notification.success({ message: '取消选课', description: '取消选课成功' })
+//   })
+// }
 
 /* 判断是否已选 */
 const isSelected = (record) => {

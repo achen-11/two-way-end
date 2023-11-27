@@ -85,6 +85,14 @@ export interface FindCourseOption {
   academic_end: number,
   /**选课阶段 */
   stage: number,
+
+  /**仅展示收藏课程 */
+  only_star: boolean,
+
+  course_id?: string,
+  name?: string,
+  domain?: string,
+  type?: string,
 }
 
 // 课程记录
@@ -115,5 +123,5 @@ export interface courseRecord {
 }
 
 export interface techerInfo {
-  teacher: {name?: string}
+  teacher: { name?: string }
 }
