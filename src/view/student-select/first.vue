@@ -253,7 +253,7 @@ const handleSelect = async () => {
       init()
       drawerOpen.value = false
       submitLoading.value = false
-      notification.success({ message: '选课', description: '选课成功' })
+      notification.success({ message: '选课', description: '操作成功' })
     })
   } catch (e) {
     submitLoading.value = false

@@ -62,7 +62,7 @@ export const course = Api(
               ]
             }
           }, // 是否有选课记录
-          selection_count: {},
+          selection_count: {}, //该课程的选课计数
           CourseTeachers: { select: { teacher: { select: { name: true } } } } // 课程教师
         },
         skip: Number(page - 1) * Number(limit),
@@ -197,6 +197,7 @@ export const select = Api(
     const courseInfo = await prisma.course.findFirst({
       where: { id: course_id },
       select: {
+        target_num: true,
         course_id: true,
         week_num: true,
         course_time: true,
@@ -240,13 +241,22 @@ export const select = Api(
         allWeekNumTag.push(s.course.week_num + s.course.course_time)
       }
     })
-    console.log('allWeekNum', allWeekNumTag, courseInfo.week_num);
-    
-    if (allWeekNumTag.includes(courseInfo.week_num+courseInfo.course_time)) {
+    if (allWeekNumTag.includes(courseInfo.week_num + courseInfo.course_time)) {
       return failRsp('授课时间冲突! 您有同一授课时间(周次+授课时间)的课程, 不能重复选择')
     }
     // 7. 校验人数限制 (第三轮)
-    // const selected_person_num = getSelectedNum()
+    if (stage === 3) {
+      // 最好加下缓存
+      // 获取当前课程可选人数 = target - 全部成功选上的
+      const successNum = await prisma.selection.count({
+        where: {
+          course_id,
+          status: 1
+        }
+      })
+      const availableNum = courseInfo.target_num - successNum
+      if (availableNum <= 0) return failRsp('该课程选课人数已满, 请选择其他课程')
+    }
 
     // 校验通过 写入
     const res = await prisma.selection.create({
@@ -254,7 +264,7 @@ export const select = Api(
         student_id: student_id,
         course_id: course_id,
         stage,
-        status: 0,
+        status: stage === 3 ? 1 : 0, // 第三阶段直接选上, 其他为待处理
         will_num: will_num || 0,
         cause: cause || '',
         term_id: termInfo.id
@@ -272,7 +282,7 @@ export const select = Api(
       updateContent = { second_all_num: { increment: 1 }, }
     } else if (stage === 3) {
       createContent = { course_id: course_id, third_all_num: 1 }
-      updateContent = { third_all_num: { increment: 1 }, }
+      updateContent = { third_all_num: { increment: 1 }, third_success_num: {increment: 1} }
     }
     await prisma.selectionCount.upsert({
       create: createContent,
