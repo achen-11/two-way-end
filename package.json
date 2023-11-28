@@ -3,7 +3,7 @@
   "private": true,
   "version": "3.0.1",
   "scripts": {
-    "start": "hooks start",
+    "start": "hooks start --port=3001",
     "dev": "hooks dev",
     "build": "hooks build"
   },

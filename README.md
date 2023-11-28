@@ -25,7 +25,7 @@
 见`/prisma/schema.prisam`
 
 
-## 选课限制说明
+## 选课限制规则说明
 
 1. 专业限制:  course_id 关联 course_major_limit, 根据 major_id 进行限制
   - 通过管理后台-课程管理进行配置
@@ -46,3 +46,36 @@
   - 修读过同名课程, 不可重复修读 (需要做数据同步)
   
 6. 周次限制
+  - 同一时间授课时间段(周次+课程时间), 不可重复修读
+
+
+## 部署FAQ
+1. Prisma (初始化 & 配置更新)
+> 数据库连接信息(datasource)初始化或更新也需要执行下列操作
+
+> 数据库配置入口: ➡️ /prisma/schema.prisma
+```bash
+# prisma数据库初始化: (初次配置)
+npx prisma db push
+# 更新表结构: (更新配置)
+npx prisma migrate dev
+```
+
+2. 启动端口配置
+> 修改 package.json中的script可以更改启动参数, 例如修改端口
+```js
+// 如 start 命令
+{
+  "scripts": {
+    "start": "hooks start --port=3001", // 表示使用 3001 端口启动
+  }
+}
+```
+
+3. 部署命令
+```bash
+git clone https://github.com/achen-11/two-way-end.git
+# 需要 node 环境
+npm install
+npm run start
+```
