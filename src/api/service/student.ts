@@ -38,12 +38,12 @@ export const list = Api(
         take: Number(limit),
         include: { class: { include: { major: { select: { name: true } } } } }
       })
-      const end_res = result.map(r => {
-        r.id_card = r.id_card.substring(0, 4) + '********' + r.id_card.substring(12)
-        return r
-      })
+      // const end_res = result.map(r => {
+      //   r.id_card = r.id_card.substring(0, 4) + '********' + r.id_card.substring(12)
+      //   return r
+      // })
       const total = await prisma.student.count({ where })
-      return successRsp({ list: end_res, total, page, limit })
+      return successRsp({ list: result, total, page, limit })
     } catch (e) {
       console.log('error', e.message);
 

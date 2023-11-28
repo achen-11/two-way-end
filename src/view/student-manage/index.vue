@@ -29,15 +29,18 @@
         <template v-if="column.key === 'class_name'">
           <span>{{ record.class.name }}</span>
         </template>
+        <template v-if="column.key === 'id_card'">
+          <span>{{ record.id_card.substring(0, 4) + '********' + record.id_card.substring(12) }}</span>
+        </template>
         <template v-if="column.key === 'is_delay'">
           <span>{{ record.is_delay ? '是' : '否' }}</span>
         </template>
 
         <template v-if="column.key === 'option'">
           <a-button type="link" primary @click="open(record)">编辑</a-button>
-          <!-- <a-popconfirm title="是否确认删除该班级? " @confirm="handleDelete(record.id)">
-            <a-button type="text" danger>删除</a-button>
-          </a-popconfirm> -->
+          <a-popconfirm title="是否确认重置该学生密码? " @confirm="handleResetPwd(record)">
+            <a-button type="text" danger>重置密码</a-button>
+          </a-popconfirm>
         </template>
       </template>
     </a-table>
@@ -88,15 +91,17 @@
   </a-modal>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /* 导入 */
 import { reactive, ref } from 'vue'
 import { downloadExcel, handleResponse, tokenHeader } from '@/utils';
 import { list as findByPage, excel as exportExcel } from '@/api/service/student';
+import { reset as resetPassword } from '@/api/service/account';
 
 import {
   update as crudUpdate, remove as crudRemove
 } from '@/api/service/[module]/crud'
+import { notification } from 'ant-design-vue';
 
 /**表格定义 */
 const params = { module: 'student' }
@@ -159,7 +164,13 @@ const pagination = reactive({
   total: 0,
   pageSize: 10,
 })
-const filterData = ref({})
+const filterData = ref<{
+  stu_id?: string,
+  name?: string,
+  major?: string,
+  class?: string,
+  is_delay?: string,
+}>({})
 const init = async () => {
   loading.value = true
   try {
@@ -193,7 +204,20 @@ const handleReset = () => {
   init()
 }
 /**Drawer */
-const formData = ref({})
+const formData = ref<{
+  major_id?: number,
+  class_id?: number,
+  id?: number,
+  is_delay?: boolean,
+  stu_id?: string,
+  name?: string,
+  sex?: string,
+  id_card?: string,
+  class?: {
+    name: string
+    major: { name: string }
+  }
+}>({})
 
 const drawerOpen = ref(false)
 const isEdit = ref(false)
@@ -236,7 +260,7 @@ const modalOpen = ref(false)
 const downloadOption = ref('all')
 
 const handleExport = async () => {
-  const data = {}
+  const data: { page?: number, limit?: number, option?: {} } = {}
   switch (downloadOption.value) {
     case 'all':
       data.page = 1
@@ -254,9 +278,22 @@ const handleExport = async () => {
   }
   const arrayBuffer = await fetch('/api/student/excel', {
     method: 'post',
-    headers: {...tokenHeader(),'Content-Type': 'application/json'},
+    headers: { ...tokenHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ args: [data.page, data.limit, data.option] })
   }).then(res => res.arrayBuffer())
   downloadExcel(arrayBuffer, '学生数据.xlsx')
+}
+
+/**重置密码 */
+const handleResetPwd = async (record) => {
+  try {
+    const { stu_id, id_card } = record
+    const res = await resetPassword(stu_id, id_card)
+    handleResponse(res, () => {
+      notification.success({ message: '重置密码', description: res.data })
+    })
+  } catch (e) {
+
+  }
 }
 </script>
