@@ -178,6 +178,27 @@ export const deleteTermById = Api(
     const id = ctx.query.id
     if (!id) return failRsp('参数id缺失')
     try {
+      // 查询需要删除的课程数据
+      const courseIds = await prisma.course.findMany({
+        select: { id: true },
+        where: { term_id: +id }
+      })
+      for (let i = 0; i < courseIds.length; i++) {
+        const course = courseIds[i];
+        // 删除课程 - 收藏计数 \ 收藏记录 \ 选课计数\ 选课记录
+        await prisma.starCount.deleteMany({ where: { course_id: course.id } })
+        await prisma.star.deleteMany({ where: { course_id: course.id } })
+        await prisma.selectionCount.deleteMany({ where: { course_id: course.id } })
+        await prisma.selection.deleteMany({ where: { term_id: +id, course_id: course.id } })
+        // 删除课程 - 专业限制 \ 授课教师 \ 年级限制
+        await prisma.courseMaojrLimit.deleteMany({ where: { course_id: course.id } })
+        await prisma.courseTeachers.deleteMany({ where: { course_id: course.id } })
+        await prisma.stageLimit.deleteMany({ where: { course_id: course.id } })
+      }
+      // 删除课程
+      await prisma.course.deleteMany({ where: { term_id: +id } })
+
+      // 最后删除term
       const res = await prisma.term.delete({
         where: {
           id: +id

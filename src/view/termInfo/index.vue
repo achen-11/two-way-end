@@ -57,7 +57,7 @@
         </template>
         <template v-if="column.key === 'option'">
           <a-button type="link" primary @click="open(record, true)">查看</a-button>
-          <a-popconfirm title="是否确认删除该选课信息? " @confirm="deleteTrem(record.id)">
+          <a-popconfirm title="是否确认删除该选课信息? " @confirm="showDeleteModal(record.id)">
             <a-button type="text" danger>删除</a-button>
           </a-popconfirm>
         </template>
@@ -96,9 +96,14 @@
 
     </a-form>
   </a-drawer>
+  <a-modal v-model:open="deleteModal" title="二次确认" @ok="deleteTerm" :okButtonProps="{ disabled: !isDelete }">
+    <div>确认后, 该学期的<span class="font-[700]">课程数据\选课数据</span>都会被删除, 且不可恢复, 
+      如果确认删除, 请输入"<span class="text-red-400 font-[700]">确认删除</span>"后进行删除操作!</div>
+    <a-input class="mt-2" v-model:value="deleteValue"></a-input>
+  </a-modal>
 </template>
 <script lang="ts" setup>
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { dateTimeFormat, handleResponse, tokenHeader } from '@/utils'
 import { getCurTermInfo, getHistoryTermInfo, addTremInfo, endCurTermById, deleteTermById, updateTremInfo } from '@/api/service/termInfo'
 import { notification } from 'ant-design-vue';
@@ -269,26 +274,43 @@ const endTrem = async (id: number) => {
 
 }
 
-// 删除选课
-const deleteTrem = async (id: number) => {
-  const res = await deleteTermById({
-    query: { id: '' + id },
-    headers: tokenHeader()
-  })
-  handleResponse(res, () => {
-    notification.success({ message: '删除选课', description: '删除选课信息成功' })
-    init()
-  })
-}
+
 
 // 自动补选
 const autoSelect = async (stage: number) => {
   const res = await autoSelectStu(stage, {
     headers: tokenHeader()
   })
-  handleResponse(res, ()=>{
+  handleResponse(res, () => {
     notification.success({ message: '自动补选', description: '自动补选已发起' })
   })
 }
 
+/* 删除选课信息 二次确认 */
+const deleteModal = ref(false)
+const deleteValue = ref()
+const deleteId = ref()
+const isDelete = computed(() => {
+  return deleteValue.value === '确认删除'
+})
+
+// 
+const showDeleteModal = (id: number) => {
+  deleteModal.value = true
+  deleteValue.value = ''
+  deleteId.value = id
+}
+
+// 删除选课
+const deleteTerm = async () => {
+  const res = await deleteTermById({
+    query: { id: '' + deleteId.value },
+    headers: tokenHeader()
+  })
+  handleResponse(res, () => {
+    notification.success({ message: '删除选课', description: '删除选课信息成功' })
+    deleteModal.value = false
+    init()
+  })
+}
 </script>
