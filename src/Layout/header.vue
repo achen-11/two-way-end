@@ -6,7 +6,7 @@
       <template #overlay>
         <a-menu>
           <a-menu-item>
-            <div class="text-blue-400" @click="showChangeModal">修改密码</div>
+            <div class="text-blue-400" v-if="userInfo.role === 'student'" @click="showChangeModal">修改密码</div>
           </a-menu-item>
           <a-menu-item>
             <div class="text-red-400" @click="logout">退出登录</div>
@@ -15,8 +15,7 @@
       </template>
     </a-dropdown>
   </div>
-  <a-modal title="重置密码" v-model:open="modalVisible" @ok="handleOk" centered>
-        <div class="text-red-400 my-4">校验通过后, 密码将重置为身份证号后六位</div>
+  <a-modal title="修改密码" v-model:open="modalVisible" @ok="handleOk" centered>
         <a-form :model="resetData" ref="resetFormRef" :label-col="{ span: 5 }">
           <a-form-item label="学号" name="stu_id" required>
             <a-input v-model:value="resetData.stu_id"></a-input>
