@@ -66,8 +66,8 @@ interface FormState {
   remember: boolean;
 }
 const formState = reactive<FormState>({
-  username: 'admin',
-  password: 'hxxy123456',
+  username: '',
+  password: '',
   remember: true,
 });
 
@@ -104,9 +104,7 @@ const resetData = ref<{stu_id?: string, id_card?: string}>({
 })
 const showModal = () =>{
   modalVisible.value = true
-  resetData.value = {
-    stu_id: '190374146'
-   }
+  resetData.value = {}
 }
 
 

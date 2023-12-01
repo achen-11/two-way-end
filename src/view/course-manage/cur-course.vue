@@ -338,24 +338,24 @@ const open = (item = null) => {
       prop: '', address: '', course_time: '', target_num: 0, major_limits: [], teachers: [],
       grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
     }
-    formData.value = {
-      id: 101,
-      course_id: "40Ha047b",
-      name: "辩论修养",
-      link: "http://mooc1.chaoxing.com/course/223338229.html",
-      week_num: "1-9",
-      score: 2,
-      hour: 32,
-      prop: "网络课程",
-      domain: "人文领域",
-      type: "",
-      address: "在线网络课程",
-      course_time: "六[1-2节]",
-      target_num: 200,
-      major_limits: [],
-      teachers: [],
-      grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
-    }
+    // formData.value = {
+    //   id: 101,
+    //   course_id: "40Ha047b",
+    //   name: "辩论修养",
+    //   link: "http://mooc1.chaoxing.com/course/223338229.html",
+    //   week_num: "1-9",
+    //   score: 2,
+    //   hour: 32,
+    //   prop: "网络课程",
+    //   domain: "人文领域",
+    //   type: "",
+    //   address: "在线网络课程",
+    //   course_time: "六[1-2节]",
+    //   target_num: 200,
+    //   major_limits: [],
+    //   teachers: [],
+    //   grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
+    // }
   }
   drawerOpen.value = true
 }
