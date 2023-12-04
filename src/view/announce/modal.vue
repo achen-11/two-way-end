@@ -42,7 +42,7 @@ const param = 'announce'
 // 跳转到创建通知
 const router = useRouter()
 const handleCreate = () => {
-  router.push('/announce/detail?id=-1')
+  router.push('/announce/edit?id=-1')
 }
 
 /**Table */
