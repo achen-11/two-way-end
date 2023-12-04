@@ -14,7 +14,7 @@
         </div>
       </a-layout-content>
       <div style="text-align: center" class="py-2 text-neutral-400">
-        Ant Design ©2018 Created by Ant UED
+        Copyright(C) 2023 厦门华厦学院  技术支持 大数据协会
       </div>
     </a-layout>
   </a-layout>
