@@ -123,9 +123,15 @@ const getAllHistoryTerm = async () => {
           value: t.id
         }
       })
-      termId.value = termOption.value[0].value
+      if (termOption.value.length > 0) {
+        termId.value = termOption.value?.[0].value
+      } else {
+        notification.warn({message: '历史课程信息', description: '暂无历史数据'})
+      }
     })
-    await init()
+    if (termId.value) {
+      await init()
+    }
     termLoading.value = false
   } catch (e) {
     notification.error({ message: '历史课程信息', description: e.message })
