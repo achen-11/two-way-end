@@ -64,17 +64,17 @@ export const course = Api(
     const { teacher_id, term_id } = ctx.query
     const course = await prisma.course.findMany({
       where: {
-        term_id: +term_id
+        term_id: +term_id,
+        CourseTeachers: {
+          some: {
+            teacher_id: +teacher_id,
+          }
+        }
       },
       include: {
         CourseTeachers: {
-          where: {
-            teacher_id: +teacher_id
-          },
           include: {
-            teacher: {
-              select: { name: true }
-            }
+            teacher: { select: { name: true } }
           }
         }
       }
