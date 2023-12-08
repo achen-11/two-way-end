@@ -8,8 +8,10 @@
   <template v-else>
     <div class="">
       <!-- 按钮 -->
-      <a-button class="" type="primary" @click="open()">添加课程</a-button>
-      <a-button class="ml-2" type="primary" @click="modalOpen = true">导出课程数据</a-button>
+      <a-button class="" type="primary" @click="open()" :disabled="!hasCurTerm">添加课程</a-button>
+      <a-button class="ml-2" type="primary" @click="modalOpen = true" :disabled="!hasCurTerm">导出课程数据</a-button>
+      <!-- <a-button class="ml-2" type="primary" @click="importOpen = true" :disabled="!hasCurTerm">导入数据</a-button> -->
+      <a-button class="ml-2" type="primary" @click="handleImportOpen" :disabled="!hasCurTerm">导入数据</a-button>
     </div>
     <!-- 筛选 -->
     <div class="mt-2 grid grid-cols-12 gap-4">
@@ -44,7 +46,7 @@
           </template>
           <template v-if="column.key === 'option'">
             <a-button type="link" primary @click="open(record)">编辑</a-button>
-            <a-popconfirm title="是否确认删除该班级? " @confirm="handleDelete(record.id)">
+            <a-popconfirm title="该操作会删除该课程的所有相关数据, 且无法恢复! 是否确认删除? " @confirm="handleDelete(record.id)">
               <a-button type="text" danger>删除</a-button>
             </a-popconfirm>
           </template>
@@ -143,24 +145,46 @@
         <a-radio value="cur-all">导出当前筛选的所有数据</a-radio>
       </a-radio-group>
     </a-modal>
+    <!-- Upload Modal -->
+    <a-modal v-model:open="importOpen" title="导入数据" @ok="handleUpload" centered
+      :okButtonProps="{ disabled: !fileList.length }">
+      <a-button type="primary" class="my-4" @click="downloadTemplate">下载导入模板</a-button>
+      <a-upload-dragger class="my-2" v-model:fileList="fileList" name="file" :max-count="1" :before-upload="beforeUpload"
+        @remove="handleRemove">
+        <p class="ant-upload-drag-icon">
+          <inbox-outlined></inbox-outlined>
+        </p>
+        <p class="text-sm text-neutral-500">点击或拖动文件至此区域上传</p>
+      </a-upload-dragger>
+      <div v-if="uploadInfo?.length" class="mt-2" >
+        <div class="text-black">导入日志:</div>
+        <div class="max-h-[400px] overflow-y-auto mt-2 border text-red-400 rounded-md p-2" v-html="uploadInfo"></div>
+      </div>
+    </a-modal>
   </template>
 </template>
 <script setup lang="ts">
 import { getCurTermInfo } from '@/api/service/termInfo';
 import { downloadExcel, formatCourse, handleResponse, tokenHeader } from '@/utils';
-import { notification } from 'ant-design-vue';
+import { UploadChangeParam, UploadProps, message, notification } from 'ant-design-vue';
 import { reactive, ref } from 'vue';
-import { list as courseFind, create as addCourse, update as updateCourse, remove as deleteCourse } from '@/api/service/course'
+import {
+  list as courseFind, create as addCourse,
+  update as updateCourse, remove as deleteCourse,
+  download as courseTemplate
+} from '@/api/service/course'
+import { course as importCourse } from '@/api/service/upload'
 import { list as curdFind } from '@/api/service/[module]/crud';
 import {
-  QuestionCircleOutlined
+  QuestionCircleOutlined, InboxOutlined
 } from '@ant-design/icons-vue';
 
 const param = { module: 'course' }
 
-/**获取所有历史数据 */
+/**获取当前选课数据 */
 const termId = ref('')
 const termLoading = ref(false)
+const hasCurTerm = ref(false)
 const getCurTerm = async () => {
   termLoading.value = true
   try {
@@ -169,9 +193,11 @@ const getCurTerm = async () => {
       if (!res.data) {
         notification.error({ message: '获取选课信息', description: '没有正在进行中的选课!' })
         termLoading.value = false
+        hasCurTerm.value = false
         return
       }
       termId.value = res.data.id
+      hasCurTerm.value = true
     })
     await init()
     termLoading.value = false
@@ -385,7 +411,7 @@ const handleSubmit = async () => {
         notification.error({ message: '添加课程异常', description: res.message })
       }
     }
-  } catch(e) {
+  } catch (e) {
 
   }
 }
@@ -430,5 +456,68 @@ const handleExport = async () => {
     body: JSON.stringify({ args: [data.page, data.limit, data.option] })
   }).then(res => res.arrayBuffer())
   downloadExcel(arrayBuffer, '课程数据.xlsx')
+}
+
+/**导入数据 */
+const importOpen = ref(false)
+const handleImportOpen = () => {
+  importOpen.value = true
+  fileList.value = []
+}
+// 下载导入模板
+const downloadTemplate = async () => {
+  const buffer = await fetch('/api/course/download', { method: 'post' }).then(res => res.arrayBuffer())
+  downloadExcel(buffer, '课程数据模板.xlsx')
+}
+
+const fileList = ref([]);
+
+const handleRemove: UploadProps['onRemove'] = file => {
+  const index = fileList.value.indexOf(file);
+  const newFileList = fileList.value.slice();
+  newFileList.splice(index, 1);
+  fileList.value = newFileList;
+};
+
+const beforeUpload: UploadProps['beforeUpload'] = file => {
+  fileList.value = [...(fileList.value || []), file];
+  return false;
+};
+
+const uploadInfo = ref(null)
+const handleUpload = async () => {
+
+  console.log(fileList.value[0]);
+  const formData = new FormData();
+  formData.append('file', fileList.value[0].originFileObj);
+
+  fetch('/api/upload/course', {
+    method: 'POST',
+    headers: { ...tokenHeader() },
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      console.log('ress', res);
+      uploadInfo.value = ''
+      if (res.code === 400) {
+        // 异常日志
+        uploadInfo.value = `<div class="text-red-400">${res.data.join('</br>')}</div>`
+      } else if (res.code === 200) {
+        if (res.data?.warningRows.length) {
+          // 警告日志
+          uploadInfo.value += `<div class="text-yellow-500">${res.data.warningRows.join('</br>')}</div>`
+        }
+        if (res.data?.importRows) {
+          // 成功日志
+          uploadInfo.value += `
+          <div class="text-black">
+            ${res.data.importRows.map(i=>i.name+'导入成功').join('</br>')}
+            <div>成功导入数据: ${res.data.importRows.length}条</div>
+          </div>`
+        }
+      }
+      init()
+    });
 }
 </script>

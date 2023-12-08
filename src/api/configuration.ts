@@ -2,14 +2,17 @@ import { createConfiguration, hooks } from '@midwayjs/hooks';
 import * as Koa from '@midwayjs/koa';
 import * as jwt from '@midwayjs/jwt';
 import * as redis from '@midwayjs/redis';
-import logger from './middle/logger'
-import errorHandle from './middle/errorHandle'
+import logger from './middle/logger';
+import errorHandle from './middle/errorHandle';
+import * as upload from '@midwayjs/upload';
+import { tmpdir } from 'os';
+import { join } from 'path';
 /**
  * setup midway server
  */
 export default createConfiguration({
   imports: [
-    Koa, jwt, 
+    Koa, jwt, upload,
     // redis,
     hooks({ middleware: [logger, errorHandle] })
 ],
@@ -24,6 +27,11 @@ export default createConfiguration({
       //     db: 0,
       //   },
       // },
+      upload: {
+        mode: 'file',
+        tmpdir: join(tmpdir(), './upload-files'),
+        whitelist: ['.xlsx']
+      }
      },
   }],
 });

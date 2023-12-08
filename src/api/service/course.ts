@@ -3,6 +3,7 @@ import { prisma } from '@/api/utils/prisma';
 import { exportExcel, failRsp, successRsp } from '@/api/utils/utils';
 import { jwtMiddleWare } from '@/api/middle/jwt';
 import { ExcelColumn } from '@/api/utils/types';
+import * as fs from 'fs'
 
 /**工具函数 */
 /**处理专业限制数据 */
@@ -350,6 +351,8 @@ export const remove = Api(
   async () => {
     const { query: { id } } = useContext()
     if (!id) return failRsp('参数id缺失')
+    // 删除教师关联数据
+    const teacherLimit = await prisma.courseTeachers.deleteMany({ where: { course_id: +id } })
     // 删除专业限制\年级限制
     const majorLimits = await prisma.courseMaojrLimit.deleteMany({ where: { course_id: +id } })
     const stageLimits = await prisma.stageLimit.deleteMany({ where: { course_id: +id } })
@@ -394,9 +397,9 @@ export const member = Api(
       },
       include: {
         student: {
-          select: { 
+          select: {
             name: true, sex: true, is_delay: true, stu_id: true,
-            class: { select: { name: true } } 
+            class: { select: { name: true } }
           }
         },
       },
@@ -446,5 +449,16 @@ export const detail = Api(
     } else {
       return successRsp(course)
     }
+  }
+)
+
+/**
+ * 下载课程数据导入模板
+ */
+export const download = Api(
+  Post(),
+  ContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+  async () => {
+    return Buffer.from(fs.readFileSync('./files/课程信息导入模版.xlsx'))
   }
 )
