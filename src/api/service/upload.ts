@@ -19,6 +19,9 @@ const getCurTermInfo = async () => {
   })
 }
 
+/**
+ * 导入课程
+ */
 export const course = Api(
   Upload('/upload/course'),
   Middleware([jwtMiddleWare]),
@@ -145,3 +148,6 @@ export const course = Api(
   }
 )
 
+/**
+ * 导入学生
+ */

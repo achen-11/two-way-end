@@ -19,9 +19,31 @@ export const list = Api(
       skip: Number(page - 1) * Number(limit),
       take: Number(limit),
       include: {
-        major: { select: { name: true, id: true } } }
+        major: { select: { name: true, id: true } }
+      }
     })
     const total = await prisma.class.count()
     return successRsp({ list: result, total, page, limit })
+  }
+)
+
+/**
+ * 根据专业获取班级
+ */
+export const findByMajor = Api(
+  Get(),
+  Query<{ major_id: string }>(),
+  Headers<{ Authorization: string }>(),
+  Middleware(jwtMiddleWare),
+  async () => {
+    const ctx = useContext()
+    const { query: { major_id } } = ctx
+
+    const res = await prisma.class.findMany({
+      where: {
+        major_id: +major_id
+      }
+    })
+    return successRsp(res)
   }
 )

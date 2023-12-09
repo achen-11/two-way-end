@@ -3,6 +3,7 @@ import { prisma } from '@/api/utils/prisma';
 import { exportExcel, failRsp, successRsp } from '@/api/utils/utils';
 import { jwtMiddleWare } from '@/api/middle/jwt';
 import { ExcelColumn } from '@/api/utils/types';
+import md5 from 'md5'
 
 
 /**
@@ -112,5 +113,137 @@ export const excel = Api(
     const buffer = await exportExcel(handleData, studentHeader)
     return Buffer.from(buffer);
 
+  }
+)
+
+
+/**
+ * 创建学生
+ */
+export const create = Api(
+  Post(),
+  Headers<{ Authorization: string }>(),
+  Middleware(jwtMiddleWare),
+  async (
+    data: {
+      stu_id: string,
+      name: string,
+      sex: number,
+      id_card: string,
+      class_id: number,
+      is_delay: boolean,
+      type: number
+    }) => {
+    const { stu_id, name, sex, id_card, class_id, is_delay, type } = data
+    const isExist = await prisma.student.findFirst({
+      where: { stu_id: stu_id }
+    })
+    if (isExist) {
+      return failRsp('学号已存在, 请检查')
+    }
+    // 创建学生
+    const student = await prisma.student.create({
+      data: {
+        account: {
+          connectOrCreate: {
+            where: { user_name: stu_id },
+            create: {
+              user_name: stu_id,
+              password: md5(id_card.slice(12))
+            }
+          }
+        },
+        class: { connect: { id: class_id } },
+        name, id_card, sex, is_delay, type
+      }
+    })
+    return successRsp(student)
+  }
+)
+
+/**
+ * 更新学生
+ */
+export const update = Api(
+  Put(),
+  Headers<{ Authorization: string }>(),
+  Middleware(jwtMiddleWare),
+  async (
+    data: {
+      id: number,
+      name: string,
+      sex: number,
+      id_card: string,
+      class_id: number,
+      is_delay: boolean,
+      type: number
+    }
+  ) => {
+    const { id, name, sex, id_card, class_id, is_delay, type } = data
+    const res = await prisma.student.update({
+      where: { id, },
+      data: { name, sex, id_card, class_id, is_delay, type }
+    })
+    return successRsp(res)
+  }
+)
+
+/**
+ * 删除学生
+ */
+export const remove = Api(
+  Delete(),
+  Headers<{ Authorization: string }>(),
+  Middleware(jwtMiddleWare),
+  async (id: number) => {
+    const stu = await prisma.student.findUnique({ where: { id } })
+
+    // 查询收藏数据
+    const starData = await prisma.star.findMany({
+      where: { student_id: stu.id }
+    })
+    const star_course_ids = starData.map(s => s.course_id)
+    // 减少对应的 star 数
+    await prisma.starCount.updateMany({
+      where: { course_id: { in: star_course_ids } },
+      data: { num: { decrement: 1 } }
+    })
+    // 删除收藏数据
+    await prisma.star.deleteMany({ where: { student_id: stu.id } })
+
+    // 查询选课数据
+    const selectData = await prisma.selection.findMany({
+      where: { student_id: stu.id }
+    })
+    // 减少对应的 select 数
+    for (let i = 0; i < selectData.length; i++) {
+      const s = selectData[i];
+      const updateContent = {}
+      switch (s.stage) {
+        case 1:
+          updateContent['first_all_num'] = { decrement: 1 }
+          if (s.status === 1) updateContent['first_success_num'] = { decrement: 1 }
+          break
+        case 2:
+          updateContent['second_all_num'] = { decrement: 1 }
+          if (s.status === 1) updateContent['second_success_num'] = { decrement: 1 }
+          break
+        case 3:
+          updateContent['third_all_num'] = { decrement: 1 }
+          if (s.status === 1) updateContent['third_success_num'] = { decrement: 1 }
+          break
+      }
+      await prisma.selectionCount.update({
+        where: { course_id: s.course_id },
+        data: updateContent
+      })
+    }
+    // 删除选课数据
+    await prisma.selection.deleteMany({ where: { student_id: stu.id } })
+    // 删除学生
+    await prisma.student.delete({ where: { id } })
+    // 删除账号
+    await prisma.account.delete({ where: { user_name: stu.stu_id } })
+    return successRsp('删除成功')
   }
 )

@@ -1,7 +1,8 @@
 <template>
   <!-- 按钮 -->
   <div class="">
-    <a-button type="primary" @click="modalOpen = true">导出学生数据</a-button>
+    <a-button type="primary" @click="open()">新增学生</a-button>
+    <a-button class="ml-2" type="primary" @click="modalOpen = true">导出学生数据</a-button>
   </div>
   <!-- 筛选区 -->
   <div class="mt-4 grid md:grid-cols-12 gap-4">
@@ -41,6 +42,9 @@
           <a-popconfirm title="是否确认重置该学生密码? " @confirm="handleResetPwd(record)">
             <a-button type="text" danger>重置密码</a-button>
           </a-popconfirm>
+          <a-popconfirm title="此操作将删除该学生的账号, 选课等相关信息, 是否确认删除 " @confirm="handleDelete(record)">
+            <a-button type="text" danger>删除</a-button>
+          </a-popconfirm>
         </template>
       </template>
     </a-table>
@@ -49,25 +53,35 @@
   <a-drawer v-model:open="drawerOpen" title="班级信息" placement="right" width="500">
     <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }">
       <a-form-item label="学号" name="stu_id" required>
-        <a-input v-model:value="formData.stu_id" :disabled="true" />
+        <a-input v-model:value="formData.stu_id" :disabled="isEdit" />
       </a-form-item>
       <a-form-item label="姓名" name="name" required>
-        <a-input v-model:value="formData.name" :disabled="true" />
+        <a-input v-model:value="formData.name" />
       </a-form-item>
       <a-form-item label="性别" name="sex" required>
-        <a-radio-group v-model:value="formData.sex" :disabled="true">
+        <a-radio-group v-model:value="formData.sex">
           <a-radio :value="1">男</a-radio>
           <a-radio :value="0">女</a-radio>
         </a-radio-group>
       </a-form-item>
       <a-form-item label="身份证" name="id_card" required>
-        <a-input v-model:value="formData.id_card" :disabled="true" />
+        <a-input v-model:value="formData.id_card" />
       </a-form-item>
-      <a-form-item label="专业" name="major_name" required>
-        <a-input v-model:value="formData.class.major.name" :disabled="true" />
+      <a-form-item label="学生类型" name="type" required>
+        <a-radio-group v-model:value="formData.type">
+          <a-radio :value="0">本科</a-radio>
+          <a-radio :value="1">专升本</a-radio>
+        </a-radio-group>
       </a-form-item>
-      <a-form-item label="班级" name="class_name" required>
-        <a-input v-model:value="formData.class.name" :disabled="true" />
+      <a-form-item label="专业" name="major_id" required>
+        <a-select v-model:value="formData.major_id" :options="majorOption" :filter-option="filterOption" show-search
+          @change="formData.class_id = null">
+        </a-select>
+      </a-form-item>
+      <a-form-item label="班级" name="class_id" required>
+        <a-select v-model:value="formData.class_id" :options="classOption" :filter-option="filterOption" show-search
+          :disabled="!formData.major_id">
+        </a-select>
       </a-form-item>
       <a-form-item label="是否延毕" name="is_delay" required>
         <a-radio-group v-model:value="formData.is_delay">
@@ -75,6 +89,7 @@
           <a-radio :value="false">否</a-radio>
         </a-radio-group>
       </a-form-item>
+
       <a-form-item :wrapper-col="{ span: 14, offset: 5 }">
         <a-button class="mr-2" @click="drawerOpen = false">取消</a-button>
         <a-button type="primary" @click="handleSubmit">确认</a-button>
@@ -93,13 +108,16 @@
 
 <script setup lang="ts">
 /* 导入 */
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { downloadExcel, handleResponse, tokenHeader } from '@/utils';
-import { list as findByPage, excel as exportExcel } from '@/api/service/student';
-import { reset as resetPassword } from '@/api/service/account';
-
 import {
-  update as crudUpdate, remove as crudRemove
+  list as findByPage, excel as exportExcel, remove as deleteStudent,
+  update as updateStudent, create as createStudent
+} from '@/api/service/student';
+import { reset as resetPassword } from '@/api/service/account';
+import { findByMajor } from '@/api/service/class'
+import {
+  update as crudUpdate, remove as crudRemove, list as curdFind
 } from '@/api/service/[module]/crud'
 import { notification } from 'ant-design-vue';
 
@@ -211,8 +229,9 @@ const formData = ref<{
   is_delay?: boolean,
   stu_id?: string,
   name?: string,
-  sex?: string,
+  sex?: number,
   id_card?: string,
+  type?: number,
   class?: {
     name: string
     major: { name: string }
@@ -221,6 +240,7 @@ const formData = ref<{
 
 const drawerOpen = ref(false)
 const isEdit = ref(false)
+const formRef = ref()
 const open = (item = null) => {
   if (item) {
     isEdit.value = true
@@ -236,21 +256,38 @@ const open = (item = null) => {
 }
 
 // 更新数据
+
 const handleSubmit = async () => {
   const data = {
     id: formData.value.id,
-    is_delay: formData.value.is_delay
+    stu_id: formData.value.stu_id,
+    name: formData.value.name,
+    sex: formData.value.sex,
+    id_card: formData.value.id_card,
+    class_id: formData.value.class_id,
+    is_delay: formData.value.is_delay,
+    type: formData.value.type,
   }
   try {
-    const res = await crudUpdate(data, {
-      headers: tokenHeader(),
-      params: { module: 'student' }
-    })
+    await formRef.value.validate()
+    let res
+    if (isEdit.value) {
+      res = await updateStudent(data, {
+        headers: tokenHeader(),
+      })
+    } else {
+      res = await createStudent(data, {
+        headers: tokenHeader()
+      })
+    }
     handleResponse(res, () => {
       drawerOpen.value = false
+      notification.success({ message: '学生信息管理', description: '操作成功!' })
       init()
     })
   } catch (e) {
+    console.log('异常');
+    
   }
 
 }
@@ -295,5 +332,52 @@ const handleResetPwd = async (record) => {
   } catch (e) {
 
   }
+}
+
+/**新增学生 */
+
+/**获取所有专业数据 */
+const majorOption = ref([])
+const filterOption = (input: string, option: any) => {
+  return option.label.includes(input)
+};
+const getAllMajor = async () => {
+  const res = await curdFind({
+    query: { page: '' + 1, limit: '999' },
+    headers: tokenHeader(),
+    params: { module: 'major' }
+  })
+  handleResponse(res, () => {
+    majorOption.value = res.data.list.map(i => { return { label: i.name, value: i.id } })
+  })
+}
+getAllMajor()
+
+// 根据专业获取班级
+const getClassByMajorId = async () => {
+  if (formData.value.major_id) {
+    const res = await findByMajor({
+      query: { major_id: '' + formData.value.major_id },
+      headers: tokenHeader()
+    })
+    return res.data.map(i => { return { label: i.name, value: i.id } })
+  } else {
+    return []
+  }
+}
+const classOption = ref([])
+watch(() => formData.value.major_id, async () => {
+  classOption.value = await getClassByMajorId()
+})
+
+// 删除学生
+const handleDelete = async (record) => {
+  const res = await deleteStudent(record.id, {
+    headers: tokenHeader()
+  })
+  handleResponse(res, () => {
+    init()
+  })
+  return
 }
 </script>
