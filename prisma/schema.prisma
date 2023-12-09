@@ -39,7 +39,7 @@ model Student {
   id_card        String // 身份证
   type           Int // 0-本科 1-专升本
   class_id       Int
-  is_delay       Boolean // 是否延毕
+  is_delay       Boolean @default(false) // 是否延毕
   only_show_star Boolean @default(false) // 偏好设置-仅展示收藏课程
 
   created_time DateTime @default(now())

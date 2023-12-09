@@ -3,6 +3,7 @@
   <div class="">
     <a-button type="primary" @click="open()">新增学生</a-button>
     <a-button class="ml-2" type="primary" @click="modalOpen = true">导出学生数据</a-button>
+    <a-button class="ml-2" type="primary" @click="handleImportOpen">导入数据</a-button>
   </div>
   <!-- 筛选区 -->
   <div class="mt-4 grid md:grid-cols-12 gap-4">
@@ -42,7 +43,7 @@
           <a-popconfirm title="是否确认重置该学生密码? " @confirm="handleResetPwd(record)">
             <a-button type="text" danger>重置密码</a-button>
           </a-popconfirm>
-          <a-popconfirm title="此操作将删除该学生的账号, 选课等相关信息, 是否确认删除 " @confirm="handleDelete(record)">
+          <a-popconfirm title="此操作将删除该学生的账号, 选课等相关信息, 是否确认删除? " @confirm="handleDelete(record)">
             <a-button type="text" danger>删除</a-button>
           </a-popconfirm>
         </template>
@@ -104,22 +105,37 @@
       <a-radio value="cur-all">导出当前筛选的所有数据</a-radio>
     </a-radio-group>
   </a-modal>
+  <!-- Upload Modal -->
+  <a-modal v-model:open="importOpen" title="导入数据" @ok="handleUpload" centered
+    :okButtonProps="{ disabled: !fileList.length }">
+    <a-button type="primary" class="my-4" @click="downloadTemplate">下载导入模板</a-button>
+    <a-upload-dragger class="my-2" v-model:fileList="fileList" name="file" :max-count="1" :before-upload="beforeUpload"
+      @remove="handleRemove">
+      <p class="ant-upload-drag-icon">
+        <inbox-outlined></inbox-outlined>
+      </p>
+      <p class="text-sm text-neutral-500">点击或拖动文件至此区域上传</p>
+    </a-upload-dragger>
+    <div v-if="uploadInfo?.length" class="mt-2">
+      <div class="text-black">导入日志:</div>
+      <div class="max-h-[400px] overflow-y-auto mt-2 border text-red-400 rounded-md p-2" v-html="uploadInfo"></div>
+    </div>
+  </a-modal>
 </template>
 
 <script setup lang="ts">
 /* 导入 */
-import { computed, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { downloadExcel, handleResponse, tokenHeader } from '@/utils';
 import {
-  list as findByPage, excel as exportExcel, remove as deleteStudent,
+  list as findByPage, remove as deleteStudent,
   update as updateStudent, create as createStudent
 } from '@/api/service/student';
 import { reset as resetPassword } from '@/api/service/account';
 import { findByMajor } from '@/api/service/class'
-import {
-  update as crudUpdate, remove as crudRemove, list as curdFind
-} from '@/api/service/[module]/crud'
-import { notification } from 'ant-design-vue';
+import { list as curdFind } from '@/api/service/[module]/crud'
+import { UploadProps, notification } from 'ant-design-vue';
+import { InboxOutlined } from '@ant-design/icons-vue';
 
 /**表格定义 */
 const params = { module: 'student' }
@@ -287,7 +303,7 @@ const handleSubmit = async () => {
     })
   } catch (e) {
     console.log('异常');
-    
+
   }
 
 }
@@ -379,5 +395,68 @@ const handleDelete = async (record) => {
     init()
   })
   return
+}
+
+/**导入数据 */
+const importOpen = ref(false)
+const handleImportOpen = () => {
+  importOpen.value = true
+  fileList.value = []
+}
+// 下载导入模板
+const downloadTemplate = async () => {
+  const buffer = await fetch('/api/student/download', { method: 'post' }).then(res => res.arrayBuffer())
+  downloadExcel(buffer, '学生数据模板.xlsx')
+}
+
+const fileList = ref([]);
+
+const handleRemove: UploadProps['onRemove'] = file => {
+  const index = fileList.value.indexOf(file);
+  const newFileList = fileList.value.slice();
+  newFileList.splice(index, 1);
+  fileList.value = newFileList;
+};
+
+const beforeUpload: UploadProps['beforeUpload'] = file => {
+  fileList.value = [...(fileList.value || []), file];
+  return false;
+};
+
+const uploadInfo = ref(null)
+const handleUpload = async () => {
+
+  console.log(fileList.value[0]);
+  const formData = new FormData();
+  formData.append('file', fileList.value[0].originFileObj);
+
+  fetch('/api/upload/student', {
+    method: 'POST',
+    headers: { ...tokenHeader() },
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      console.log('ress', res);
+      uploadInfo.value = ''
+      if (res.code === 400) {
+        // 异常日志
+        uploadInfo.value = `<div class="text-red-400">${res.data.join('</br>')}</div>`
+      } else if (res.code === 200) {
+        if (res.data?.warningRows.length) {
+          // 警告日志
+          uploadInfo.value += `<div class="text-yellow-500">${res.data.warningRows.join('</br>')}</div>`
+        }
+        if (res.data?.importRows) {
+          // 成功日志
+          uploadInfo.value += `
+          <div class="text-black">
+            ${res.data.importRows.map(i => i.name + '导入成功').join('</br>')}
+            <div>成功导入数据: ${res.data.importRows.length}条</div>
+          </div>`
+        }
+      }
+      init()
+    });
 }
 </script>

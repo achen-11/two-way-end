@@ -4,6 +4,7 @@ import { exportExcel, failRsp, successRsp } from '@/api/utils/utils';
 import { jwtMiddleWare } from '@/api/middle/jwt';
 import { ExcelColumn } from '@/api/utils/types';
 import md5 from 'md5'
+import * as fs from 'fs'
 
 
 /**
@@ -245,5 +246,16 @@ export const remove = Api(
     // 删除账号
     await prisma.account.delete({ where: { user_name: stu.stu_id } })
     return successRsp('删除成功')
+  }
+)
+
+/**
+ * 下载课程数据导入模板
+ */
+export const download = Api(
+  Post(),
+  ContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+  async () => {
+    return Buffer.from(fs.readFileSync('./import-template/学生信息导入模板.xlsx'))
   }
 )

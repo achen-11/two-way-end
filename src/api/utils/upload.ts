@@ -1,5 +1,4 @@
-import { Major, Teacher } from '@prisma/client';
-import Excel from 'exceljs'
+import { Class, Major, Teacher } from '@prisma/client';
 
 
 /**
@@ -76,6 +75,47 @@ export const validateCourse = (course, allTeacher: Teacher[], allMajor: Major[])
   }
   // 如果存在错误信息, 返回
   if (errorInfo.length > 0){
+    return errorInfo.join(', ')
+  }
+  return true
+}
+
+/**
+ * 校验学生数据
+ */
+export const validateStudent = (student, allMajor: Major[], allClass: Class[])=>{
+  const { stu_id, name, sex, id_card, major_name, class_name, is_delay, type, } = student
+  const errorInfo: string[] = []
+  // 校验stu_id
+  if (!stu_id) errorInfo.push('学号为空')
+  
+  // 校验姓名
+  if (!name) errorInfo.push('姓名为空')
+
+  // 校验性别
+  if (!sex) errorInfo.push('性别为空')
+  if (sex !== '男' && sex !== '女') errorInfo.push('性别非法输入')
+
+  // 身份证
+  if (!id_card) errorInfo.push('身份证为空')
+  if (/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(id_card) === false) errorInfo.push('身份证格式非法')
+
+  // 专业名称
+  if (!major_name) errorInfo.push('专业为空')
+  if (!allMajor.some(item => item.name === major_name)) errorInfo.push('专业不存在')
+
+  // 班级名称
+  if (!class_name) errorInfo.push('班级为空')
+  if (!allClass.some(item => item.name === class_name)) errorInfo.push('班级不存在')
+
+  // 是否延毕
+  if (is_delay && is_delay !=='是' && is_delay !== '否') errorInfo.push('是否延毕非法输入')
+
+  // 类型
+  if (!type) errorInfo.push('学生类型为空')
+  if (type !== '本科' && type !== '专升本') errorInfo.push('学生类型非法输入')
+  
+  if (errorInfo.length>0) {
     return errorInfo.join(', ')
   }
   return true

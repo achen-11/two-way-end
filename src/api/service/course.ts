@@ -459,6 +459,6 @@ export const download = Api(
   Post(),
   ContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
   async () => {
-    return Buffer.from(fs.readFileSync('./files/课程信息导入模版.xlsx'))
+    return Buffer.from(fs.readFileSync('./import-template/课程信息导入模版.xlsx'))
   }
 )

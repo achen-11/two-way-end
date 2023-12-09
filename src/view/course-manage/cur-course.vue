@@ -166,18 +166,15 @@
 <script setup lang="ts">
 import { getCurTermInfo } from '@/api/service/termInfo';
 import { downloadExcel, formatCourse, handleResponse, tokenHeader } from '@/utils';
-import { UploadChangeParam, UploadProps, message, notification } from 'ant-design-vue';
+import { UploadProps, notification } from 'ant-design-vue';
 import { reactive, ref } from 'vue';
 import {
   list as courseFind, create as addCourse,
   update as updateCourse, remove as deleteCourse,
   download as courseTemplate
 } from '@/api/service/course'
-import { course as importCourse } from '@/api/service/upload'
 import { list as curdFind } from '@/api/service/[module]/crud';
-import {
-  QuestionCircleOutlined, InboxOutlined
-} from '@ant-design/icons-vue';
+import { QuestionCircleOutlined, InboxOutlined } from '@ant-design/icons-vue';
 
 const param = { module: 'course' }
 
