@@ -80,7 +80,7 @@ export const useTermStore = defineStore('termInfo', {
         this.termInfo = res.data
         const grade = res.data.academic_end - userInfo.class.enroll_year
         this.curStageInfo = getCurrentStage(res.data)
-        if (grade > 4) {
+        if (grade > 4 || (userInfo.type===1 && grade > 2)) {
           this.curStageInfo.description = '您已毕业, 欢迎回来👏'
           this.curStageInfo.stage = -999
         }
