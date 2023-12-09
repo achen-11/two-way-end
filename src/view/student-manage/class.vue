@@ -2,6 +2,7 @@
   <!-- 按钮 -->
   <div class="">
     <a-button type="primary" @click="open()">新增班级</a-button>
+    <a-button class="ml-2" type="primary" @click="handleImportOpen">导入数据</a-button>
   </div>
   <!-- Table -->
   <div class="mt-4">
@@ -42,19 +43,37 @@
         </a-form-item>
       </a-form>
     </a-drawer>
+    <!-- Upload Modal -->
+    <a-modal v-model:open="importOpen" title="导入数据" @ok="handleUpload" centered
+      :okButtonProps="{ disabled: !fileList.length }">
+      <a-button type="primary" class="my-4" @click="downloadTemplate">下载导入模板</a-button>
+      <a-upload-dragger class="my-2" v-model:fileList="fileList" name="file" :max-count="1" :before-upload="beforeUpload"
+        @remove="handleRemove">
+        <p class="ant-upload-drag-icon">
+          <inbox-outlined></inbox-outlined>
+        </p>
+        <p class="text-sm text-neutral-500">点击或拖动文件至此区域上传</p>
+      </a-upload-dragger>
+      <div v-if="uploadInfo?.length" class="mt-2">
+        <div class="text-black">导入日志:</div>
+        <div class="max-h-[400px] overflow-y-auto mt-2 border text-red-400 rounded-md p-2" v-html="uploadInfo"></div>
+      </div>
+    </a-modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
-import { handleResponse, tokenHeader } from '@/utils';
-import { notification } from 'ant-design-vue';
+import { downloadExcel, handleResponse, tokenHeader } from '@/utils';
+import { UploadProps, notification } from 'ant-design-vue';
 import { list as findByPage } from '@/api/service/class'
 import {
   create as addClass, list as curdFind,
   update as updateClass, remove as deleteMajorById
 } from '@/api/service/[module]/crud'
 import dayjs from 'dayjs';
+import { InboxOutlined } from '@ant-design/icons-vue';
+
 
 // crud 的 params
 const params = { module: 'class' }
@@ -208,7 +227,72 @@ const handleDelete = async (id: string) => {
   handleResponse(res, () => {
     notification.success({ message: '班级管理', description: '删除成功!' })
     init()
+  }, () => {
+    notification.error({ message: '班级管理', description: '存在关联数据, 删除失败!' })
   })
+}
+
+/**导入数据 */
+const importOpen = ref(false)
+const handleImportOpen = () => {
+  importOpen.value = true
+  fileList.value = []
+}
+// 下载导入模板
+const downloadTemplate = async () => {
+  const buffer = await fetch('/api/class/download', { method: 'post' }).then(res => res.arrayBuffer())
+  downloadExcel(buffer, '班级数据模板.xlsx')
+}
+
+const fileList = ref([]);
+
+const handleRemove: UploadProps['onRemove'] = file => {
+  const index = fileList.value.indexOf(file);
+  const newFileList = fileList.value.slice();
+  newFileList.splice(index, 1);
+  fileList.value = newFileList;
+};
+
+const beforeUpload: UploadProps['beforeUpload'] = file => {
+  fileList.value = [...(fileList.value || []), file];
+  return false;
+};
+
+const uploadInfo = ref(null)
+const handleUpload = async () => {
+
+  console.log(fileList.value[0]);
+  const formData = new FormData();
+  formData.append('file', fileList.value[0].originFileObj);
+
+  fetch('/api/upload/class', {
+    method: 'POST',
+    headers: { ...tokenHeader() },
+    body: formData,
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      console.log('ress', res);
+      uploadInfo.value = ''
+      if (res.code === 400) {
+        // 异常日志
+        uploadInfo.value = `<div class="text-red-400">${res.data.join('</br>')}</div>`
+      } else if (res.code === 200) {
+        if (res.data?.warningRows.length) {
+          // 警告日志
+          uploadInfo.value += `<div class="text-yellow-500">${res.data.warningRows.join('</br>')}</div>`
+        }
+        if (res.data?.importRows) {
+          // 成功日志
+          uploadInfo.value += `
+          <div class="text-black">
+            ${res.data.importRows.map(i => i.name + '导入成功').join('</br>')}
+            <div>成功导入数据: ${res.data.importRows.length}条</div>
+          </div>`
+        }
+      }
+      init()
+    });
 }
 
 </script>

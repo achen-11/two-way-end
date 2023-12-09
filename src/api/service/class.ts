@@ -1,7 +1,8 @@
-import { Api, Delete, Get, Headers, Middleware, Params, Post, Put, Query, useContext } from '@midwayjs/hooks';
+import { Api, ContentType, Delete, Get, Headers, Middleware, Params, Post, Put, Query, useContext } from '@midwayjs/hooks';
 import { prisma } from '@/api/utils/prisma';
 import { failRsp, successRsp } from '@/api/utils/utils';
 import { jwtMiddleWare } from '@/api/middle/jwt';
+import fs from 'fs'
 
 /**
  * 分页查询数据
@@ -45,5 +46,16 @@ export const findByMajor = Api(
       }
     })
     return successRsp(res)
+  }
+)
+
+/**
+ * 下载课程数据导入模板
+ */
+export const download = Api(
+  Post(),
+  ContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+  async () => {
+    return Buffer.from(fs.readFileSync('./import-template/班级信息导入模版.xlsx'))
   }
 )

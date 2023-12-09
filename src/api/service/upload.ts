@@ -8,7 +8,7 @@ import { prisma } from '@/api/utils/prisma';
 import { exportExcel, failRsp, successRsp } from '@/api/utils/utils';
 import { jwtMiddleWare } from '@/api/middle/jwt';
 import Excel from 'exceljs'
-import { validateCourse, validateStudent } from '../utils/upload';
+import { validateClass, validateCourse, validateStudent } from '../utils/upload';
 import md5 from 'md5';
 
 // 获取当前选课信息
@@ -183,7 +183,6 @@ export const student = Api(
       const valid = validateStudent(student, allMajor, allClass)
       if (valid !== true) {
         errorRows.push(`第${i}行 [${student.stu_id}]${student.name}校验失败: ${valid}`)
-
       }
       // 校验重复数据
       const isExist = await prisma.student.findUnique({ where: { stu_id: student.stu_id } })
@@ -216,8 +215,82 @@ export const student = Api(
             class: { connect: { id: allClass.find(item => item.name === class_name)?.id, } }
           }
         })
-      } catch(e) {
+      } catch (e) {
         errorRows.push(`${stu_id}-${name}导入失败, 报错信息:${e.message}`)
+      }
+    }
+    // 返回结果
+    if (errorRows.length > 0) {
+      return failRsp('校验未通过', 400, errorRows)
+    }
+    return successRsp({ importRows, warningRows })
+
+  }
+)
+
+/**
+ * 导入班级
+ */
+export const classes = Api(
+  Upload('/upload/class'),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async () => {
+    // 返回结果
+    const errorRows = []
+    const warningRows = []
+    const importRows = []
+    // 校验辅助数据
+    const allMajor = await prisma.major.findMany()
+
+    // 读取 excel
+    const files = useFiles()
+    const data = files.file[0].data
+    const workbook = new Excel.Workbook()
+    await workbook.xlsx.readFile(data)
+    const sheet = workbook.getWorksheet(1)
+    for (let i = 2; i <= sheet.actualRowCount; i++) {
+      const line = sheet.getRow(i).values
+      const classInfo = {
+        name: line[1],
+        major_name: line[2],
+        enroll_year: line[3]
+      }
+      // 校验数据
+      const valid = validateClass(classInfo, allMajor)
+      if (valid !== true) {
+        errorRows.push(`第${i}行 ${classInfo.name}校验失败: ${valid}`)
+      }
+      // 校验重复数据
+      const isExist = await prisma.class.findFirst({ where: { name: classInfo.name } })
+      if (isExist?.id) {
+        // 如果存在
+        warningRows.push(`第${i}行 ${classInfo.name}已存在, 不再重复导入`)
+      } else {
+        // 不存在, 导入数据
+        importRows.push(classInfo)
+      }
+    }
+
+    // 校验失败
+    if (errorRows.length > 0) {
+      return failRsp('校验未通过', 400, errorRows)
+    }
+    // 导入数据
+    for (let i = 0; i < importRows.length; i++) {
+      const classInfo = importRows[i]
+      try {
+        await prisma.class.create({
+          data: {
+            name: classInfo.name,
+            major: {
+              connect: {id: allMajor.find(major=>major.name===classInfo.major_name).id}
+            },
+            enroll_year: +classInfo.enroll_year
+          }
+        })
+      } catch(e) {
+        errorRows.push(`${classInfo.name}导入失败, 报错信息:${e.message}`)
       }
     }
     // 返回结果
