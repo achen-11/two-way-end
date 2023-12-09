@@ -16,7 +16,7 @@
         仅展示收藏课程
       </a-checkbox>
     </div>
-    <div class="my-4 font-[700]">限选门数: {{ limitNum === Infinity ? '无限制' : limitNum }}</div>
+    <div class="my-4 font-[700]">限选学分: {{ limitNum === Infinity ? 4 : 2 }}</div>
     <!-- table -->
     <div class="mt-4">
       <a-table :columns="columns" :data-source="dataSource" :pagination="pagination" :loading="loading"
