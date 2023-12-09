@@ -63,7 +63,7 @@ export const course = Api(
       }
 
       // 校验重复数据
-      const isExist = await prisma.course.findFirst({
+      const isExist = await prisma.course.findMany({
         where: {
           course_id: course.course_id,
           name: course.name,
@@ -73,7 +73,13 @@ export const course = Api(
           CourseTeachers: { select: { teacher: { select: { teacher_id: true } } } }
         }
       })
-      if (isExist?.id) {
+      // 同一课程 同一周次 不同老师
+      let teacher_ids_isExist = isExist.some(c=>{
+        const ori_ids = c.CourseTeachers.map(t=>t.teacher.teacher_id).slice().sort()
+        const target_ids = course.teacher_ids.slice().sort()
+        return JSON.stringify(ori_ids) === JSON.stringify(target_ids);
+      })
+      if (isExist.length > 0 && teacher_ids_isExist) {
         // 如果存在
         warningRows.push(`第${i}行 ${course.name} 已存在, 不再重复导入`)
       } else {
