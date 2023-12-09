@@ -196,7 +196,7 @@ export const select = Api(
           },
           include: {
             course: {
-              select: { course_id: true, week_num: true, course_time: true }
+              select: { course_id: true, week_num: true, course_time: true, score: true }
             }
           }
         }
@@ -209,6 +209,7 @@ export const select = Api(
         course_id: true,
         week_num: true,
         course_time: true,
+        score: true,
         majorLimit: { select: { major_id: true, } },
         stageLimit: { select: { stage: true, grade: true } },
       }
@@ -233,16 +234,20 @@ export const select = Api(
 
     // 4. 校验学生选课数量
     const selected_course_num = getStuSelectedNum(stuInfo.Selection, termInfo, stage)
-    // 本科生 && 大一大二 限制两门课程
-    if (stuInfo.type === 0 && [1, 2].includes(grade) && selected_course_num >= 2) {
-      return failRsp('选课数量已达上限')
+    // 本科生 && 大一大二 限制2 学分
+    if (stuInfo.type === 0 && [1, 2].includes(grade) && selected_course_num+courseInfo.score > 2) {
+      return failRsp('选课学分已达 2 学分上限')
     }
-    // 5. 校验历史选课
+    // 5. 所有人不能超过 4 学分
+    if (selected_course_num+courseInfo.score > 4) {
+      return failRsp('选课学分已达 4 学分上限')
+    }
+    // 6. 校验历史选课
     const historySelectedValidate = validateHistorySelected(stuInfo.Selection, courseInfo.course_id)
     if (!historySelectedValidate) {
       return failRsp('您已修读过该课程')
     }
-    // 6. 周次限制
+    // 7. 周次限制
     const allWeekNumTag = []
     stuInfo.Selection.forEach(s => {
       if (s.term_id === termInfo.id && s.status !== 2) {
@@ -252,7 +257,7 @@ export const select = Api(
     if (allWeekNumTag.includes(courseInfo.week_num + courseInfo.course_time)) {
       return failRsp('授课时间冲突! 您有同一授课时间(周次+授课时间)的课程, 不能重复选择')
     }
-    // 7. 校验人数限制 (第三轮)
+    // 8. 校验人数限制 (第三轮)
     if (stage === 3) {
       // 最好加下缓存
       // 获取当前课程可选人数 = target - 全部成功选上的
