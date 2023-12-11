@@ -76,7 +76,7 @@ interface SelectionRecord extends Selection {
 export const validateHistorySelected = (selection: SelectionRecord[], course_id: string) => {
   for (let i = 0; i < selection.length; i++) {
     const record = selection[i]
-    if (record.course.course_id === course_id && record.status === 1) {
+    if (record.course.course_id === course_id && record.status !== 2) {
       return false
     }
   }

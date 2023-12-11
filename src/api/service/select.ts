@@ -242,10 +242,10 @@ export const select = Api(
     if (selected_course_num+courseInfo.score > 4) {
       return failRsp('选课学分已达 4 学分上限')
     }
-    // 6. 校验历史选课
+    // 6. 校验历史选课 \ 同 course_id重复选课
     const historySelectedValidate = validateHistorySelected(stuInfo.Selection, courseInfo.course_id)
     if (!historySelectedValidate) {
-      return failRsp('您已修读过该课程')
+      return failRsp('您已修读过或选择过该门课程, 请勿重复选择')
     }
     // 7. 周次限制
     const allWeekNumTag = []

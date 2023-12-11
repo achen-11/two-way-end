@@ -21,8 +21,8 @@
       </div>
       <!-- 选课内容 -->
       <Exhibit v-if="curStageInfo.stage === 0"></Exhibit>
-      <First v-if="curStageInfo.stage === 1 || curStageInfo.stage === 2"></First>
-      <Third v-if="curStageInfo.stage === 3"></Third>
+      <First v-else-if="curStageInfo.stage === 1 || curStageInfo.stage === 2"></First>
+      <Third v-else-if="curStageInfo.stage === 3"></Third>
       <no-select :description="curStageInfo.description" v-else="curStageInfo.stage === -999"></no-select>
     </a-spin>
   </div>
