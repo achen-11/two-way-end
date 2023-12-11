@@ -128,7 +128,7 @@ export const course = Api(
             term_id: termInfo.id,
             course_id, name, week_num, course_time, domain, prop, address,
             score: +score,
-            hour: +score,
+            hour: +hour,
             target_num: +target_num,
             link: link || '',
             type: type || '',
