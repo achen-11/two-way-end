@@ -51,7 +51,7 @@
     </a-table>
   </div>
   <!-- Drawer -->
-  <a-drawer v-model:open="drawerOpen" title="班级信息" placement="right" width="500">
+  <a-drawer v-model:open="drawerOpen" title="学生信息" placement="right" width="500">
     <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }">
       <a-form-item label="学号" name="stu_id" required>
         <a-input v-model:value="formData.stu_id" :disabled="isEdit" />

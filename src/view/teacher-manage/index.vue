@@ -29,7 +29,7 @@
     </a-table>
   </div>
   <!-- Drawer -->
-  <a-drawer v-model:open="drawerOpen" title="专业信息" placement="right" width="500">
+  <a-drawer v-model:open="drawerOpen" title="教师信息" placement="right" width="500">
     <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }">
       <a-form-item label="教师工号" name="teacher_id" required>
         <a-input v-model:value="formData.teacher_id" :disabled="isEdit" />

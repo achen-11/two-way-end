@@ -35,7 +35,7 @@
         </a-table>
       </div>
       <!-- Drawer -->
-      <a-drawer v-model:open="drawerOpen" title="选课" width="400" placement="right" :maskClosable="false">
+      <a-drawer v-model:open="drawerOpen" title="选课信息" width="400" placement="right" :maskClosable="false">
         <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }" layout="horizontal">
           <a-form-item class="mb-2" label="课程" name="course_id" required>
             <a class="border-b pb-1" :href="formData.link" target="_blank">{{ `[${formData.course_id}] ${formData.name}`

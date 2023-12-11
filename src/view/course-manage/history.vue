@@ -47,7 +47,7 @@
       </a-table>
     </div>
     <!-- Drawer -->
-    <a-drawer v-model:open="drawerOpen" title="班级信息" placement="right" width="500">
+    <a-drawer v-model:open="drawerOpen" title="课程信息" placement="right" width="500">
       <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }" :disabled="true">
         <a-form-item label="课程ID" name="course_id" required>
           <a-input v-model:value="formData.course_id" />
