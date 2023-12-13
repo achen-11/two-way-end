@@ -93,7 +93,7 @@ const getAnnounceList = async () => {
   loading.value = true
   const res = await getAnnounceDetail({
     query: { id: '-1' },
-    headers: tokenHeader()
+    // headers: tokenHeader()
   })
   handleResponse(res, () => {
     dataSource.value = res.data ? [res.data] : []

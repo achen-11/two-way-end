@@ -35,7 +35,7 @@ const init = async () => {
     // id存在则获取 id 内容
     const res = await getAnnounceDetail({
       query: { id: '' + id },
-      headers: tokenHeader()
+      // headers: tokenHeader()
     })
     handleResponse(res, () => {
       formData.value = res.data

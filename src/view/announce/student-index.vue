@@ -11,15 +11,6 @@
     <a-pagination v-model:current="pagination.current" :total="pagination.total" v-model:page-size="pagination.pageSize"
       show-less-items @change="handleChange" />
   </div>
-
-  <a-modal v-model:open="modalOpen" title="通知" :footer="null" width="600px">
-    <div class="max-h-[400px] overflow-y-auto">
-      <div v-html="modalContent.content"></div>
-      <div class="flex justify-center">
-        <a-button type="primary" class="min-w-[100px]" @click="handleOk()">确认</a-button>
-      </div>
-    </div>
-  </a-modal>
 </template>
 
 <script setup lang="ts">
@@ -56,35 +47,5 @@ const router = useRouter()
 const handleDetail = (id: number) => {
   router.push('/announce/detail?id=' + id)
 }
-
-/**弹窗通知公告 */
-const modalOpen = ref(false)
-const modalContent = ref<{content: string}>({content: ''})
-const handleOk = () => {
-  modalOpen.value = false
-}
-const showModal = async () => {
-  const isFirst = localStorage.getItem('isFirst')
-  // id存在则获取 id 内容
-  if (isFirst && isFirst==='false') {
-    return
-  }
-  const res = await getAnnounceDetail({
-    query: { id: '-1' },
-    headers: tokenHeader()
-  })
-  handleResponse(res, () => {
-    // 显示弹窗
-    modalContent.value = res.data
-    modalOpen.value = true
-    localStorage.setItem('isFirst', 'false')
-  }, ()=>{
-    // 异常处理
-    modalOpen.value = false
-    return
-  })
-}
-showModal()
-
 
 </script>

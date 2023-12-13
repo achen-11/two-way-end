@@ -11,8 +11,8 @@ import { failRsp, successRsp } from "../utils/utils";
 export const detail = Api(
   Get(),
   Query<{ id: string }>(),
-  Headers<{ Authorization: string }>(),
-  Middleware(jwtMiddleWare),
+  // Headers<{ Authorization: string }>(),
+  // Middleware(jwtMiddleWare),
   async () => {
     const { query: { id } } = useContext()
     const res = await prisma.announce.findUnique({

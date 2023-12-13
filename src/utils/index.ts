@@ -85,6 +85,20 @@ export const downloadExcel = (buffer: ArrayBuffer, name: string) => {
 }
 
 /**
+ * 传入 buffer 下载xlsx文件
+ * @param buffer 目标 buffer
+ * @param name 文件名称
+ */
+export const downloadCSV = (buffer: ArrayBuffer, name: string) => {
+  const blob = new Blob([buffer], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(new Blob([blob]));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+}
+
+/**
  * 处理课程数据的 majorLimits \ stageLimits \ teachers
  */
 export const formatCourse = (course) => {
