@@ -49,12 +49,12 @@ export const course = Api(
         course_id: line[1], name: line[2], link: line[3], week_num: line[4], score: line[5],
         hour: line[6], course_time: line[7], prop: line[8], domain: line[9], type: line[10],
         address: line[11], target_num: line[12],
-        teacher_ids: line[13]?.split(/[,，]/) || [],
-        major_limit_names: line[14]?.split(/[,，]/) || [],
-        exhibit_limit: line[15]?.split(/[,，]/) || [],
-        first_limit: line[16]?.split(/[,，]/) || [],
-        second_limit: line[17]?.split(/[,，]/) || [],
-        third_limit: line[18]?.split(/[,，]/) || [],
+        teacher_ids: line[13] ? (''+line[13])?.split(/[,，]/) : [],
+        major_limit_names: line[14] ? (''+line[14])?.split(/[,，]/) : [],
+        exhibit_limit: line[15] ? (''+line[15])?.split(/[,，]/) : [],
+        first_limit: line[16] ? (''+line[16])?.split(/[,，]/) : [],
+        second_limit: line[17] ? (''+line[17])?.split(/[,，]/) : [],
+        third_limit: line[18] ? (''+line[18])?.split(/[,，]/) : [],
       }
       // 校验数据
       const valid = validateCourse(course, allTeacher, allMajor)
@@ -74,8 +74,8 @@ export const course = Api(
         }
       })
       // 同一课程 同一周次 不同老师
-      let teacher_ids_isExist = isExist.some(c=>{
-        const ori_ids = c.CourseTeachers.map(t=>t.teacher.teacher_id).slice().sort()
+      let teacher_ids_isExist = isExist.some(c => {
+        const ori_ids = c.CourseTeachers.map(t => t.teacher.teacher_id).slice().sort()
         const target_ids = course.teacher_ids.slice().sort()
         return JSON.stringify(ori_ids) === JSON.stringify(target_ids);
       })
@@ -290,12 +290,12 @@ export const classes = Api(
           data: {
             name: classInfo.name,
             major: {
-              connect: {id: allMajor.find(major=>major.name===classInfo.major_name).id}
+              connect: { id: allMajor.find(major => major.name === classInfo.major_name).id }
             },
             enroll_year: +classInfo.enroll_year
           }
         })
-      } catch(e) {
+      } catch (e) {
         errorRows.push(`${classInfo.name}导入失败, 报错信息:${e.message}`)
       }
     }
