@@ -136,11 +136,11 @@ const columns = [
     dataIndex: 'score',
     key: 'score'
   },
-  {
-    title: '授课时间',
-    dataIndex: 'week_num',
-    key: 'week_num'
-  },
+  // {
+  //   title: '授课时间',
+  //   dataIndex: 'week_num',
+  //   key: 'week_num'
+  // },
   {
     title: '课程领域',
     dataIndex: 'domain',
