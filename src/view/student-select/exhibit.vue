@@ -153,7 +153,8 @@ const init = async () => {
     academic_end: termInfo.value.academic_end,
     major_id: userInfo.value.class.major_id,
     enroll_year: userInfo.value.class.enroll_year,
-    student_id: userInfo.value.id
+    student_id: userInfo.value.id,
+    ...filterData.value
   }
   const res = await course({
     query: { page: '' + pagination.current, limit: '' + pagination.pageSize, option: JSON.stringify(option) },
