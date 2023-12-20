@@ -193,6 +193,7 @@ const init = async () => {
   handleResponse(res, () => {
     console.log(res);
     dataSource.value = res.data.list
+    pagination.total = res.data.total
     loading.value = false
   }, () => {
     loading.value = false
