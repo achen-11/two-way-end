@@ -26,7 +26,7 @@ const loading = ref(false)
 const getAnnounceList = async () => {
   loading.value = true
   const res = await findAnnounceList({
-    query: { page: '' + pagination.current, limit: '' + pagination.pageSize },
+    query: { page: '' + pagination.current, limit: '' + pagination.pageSize, isPublish: 'true' },
     headers: tokenHeader()
   })
   handleResponse(res, () => {

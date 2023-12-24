@@ -2,6 +2,7 @@ import { Api, Get, Headers, Middleware, Post, Put, Query, useContext } from "@mi
 import { jwtMiddleWare } from "../middle/jwt";
 import { prisma } from "../utils/prisma";
 import { failRsp, successRsp } from "../utils/utils";
+import { Prisma } from "@prisma/client";
 
 
 
@@ -27,17 +28,21 @@ export const detail = Api(
  */
 export const list = Api(
   Get(),
-  Query<{ page: string, limit: string }>(),
+  Query<{ page: string, limit: string, isPublish?: string }>(),
   Headers<{ Authorization: string }>(),
   Middleware(jwtMiddleWare),
   async () => {
-    const { query: { page, limit } } = useContext()
+    const { query: { page, limit, isPublish=false } } = useContext()
+    const whereContent: Prisma.AnnounceWhereInput = { id: { not: -1 } }
+    if (isPublish === 'true') {
+      whereContent.status = true
+    }
     const res = await prisma.announce.findMany({
-      where: { id: { not: -1 } },
+      where: whereContent,
       skip: Number(page - 1) * Number(limit),
       take: Number(limit),
     })
-    const total = await prisma.announce.count({ where: { id: { not: -1 } } })
+    const total = await prisma.announce.count({ where: whereContent })
     return successRsp({
       list: res,
       total
