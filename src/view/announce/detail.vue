@@ -67,7 +67,14 @@ init()
 /** wang Edit */
 const editorRef = shallowRef()
 const toolbarConfig = {}
-const editorConfig = { placeholder: '请输入内容...' }
+const editorConfig = {
+  placeholder: '请输入内容...',
+  MENU_CONF: {
+    'uploadImage': {
+      server: '/api/upload/editor'
+    }
+  }
+}
 const mode = 'default'
 const handleCreated = (editor) => {
   editorRef.value = editor // 记录 editor 实例，重要！

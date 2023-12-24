@@ -15,9 +15,9 @@ export default createConfiguration({
     Koa, jwt, upload,
     // redis,
     hooks({ middleware: [logger, errorHandle] })
-],
-  importConfigs: [{ 
-    default: { 
+  ],
+  importConfigs: [{
+    default: {
       keys: 'session_keys',
       // redis: {
       //   client: {
@@ -30,8 +30,8 @@ export default createConfiguration({
       upload: {
         mode: 'file',
         tmpdir: join(tmpdir(), './upload-files'),
-        whitelist: ['.xlsx']
+        whitelist: ['.xlsx', '.csv', '.jpg', '.jpeg', '.png', 'pdf', '.gif', '.svg', '.json', '.pdf', '.zip', '.gz', '.tgz', '.gzip', '.mp3', '.mp4', '.avi',]
       }
-     },
+    },
   }],
 });
