@@ -7,7 +7,13 @@
           {{ index + 1 }}
         </template>
         <template v-if="column.key === 'course_id'">
-          <a :href="record.link" target="_blank">{{ `[${record.course_id}] ${record.name}` }}</a>
+          <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
+            {{ `[${record.course_id}]` }}
+          </a>
+          <span v-else>
+            {{ `[${record.course_id}]` }}
+          </span>
+          {{ record.name }}
         </template>
         <template v-if="column.key === 'score'">
           <span>{{ record.score + ' / ' + record.hour }}</span>

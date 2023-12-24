@@ -26,10 +26,15 @@
             <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
           </template>
           <template v-if="column.key === 'course_id'">
-            <a :href="record.link" target="_blank">
+            <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
               <StarFilled class="text-yellow-400" v-if="record?.Star?.length" />
-              {{ `[${record.course_id}] ${record.name}` }}
+              {{ `[${record.course_id}]` }}
             </a>
+            <span v-else>
+              <StarFilled class="text-yellow-400" v-if="record?.Star?.length" />
+              {{ `[${record.course_id}]` }}
+            </span>
+            {{ record.name }}
           </template>
           <template v-if="column.key === 'score'">
             <span>{{ record.score + ' / ' + record.hour }}</span>

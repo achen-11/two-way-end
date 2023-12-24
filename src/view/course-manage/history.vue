@@ -32,7 +32,13 @@
             <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
           </template>
           <template v-if="column.key === 'course_id'">
-            <a :href="record.link" target="_blank">{{ `[${record.course_id}] ${record.name}` }}</a>
+            <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
+              {{ `[${record.course_id}]` }}
+            </a>
+            <span v-else>
+              {{ `[${record.course_id}]` }}
+            </span>
+            {{ record.name }}
           </template>
           <template v-if="column.key === 'score'">
             <span>{{ record.score + ' / ' + record.hour }}</span>
@@ -126,7 +132,7 @@ const getAllHistoryTerm = async () => {
       if (termOption.value.length > 0) {
         termId.value = termOption.value?.[0].value
       } else {
-        notification.warn({message: '历史课程信息', description: '暂无历史数据'})
+        notification.warn({ message: '历史课程信息', description: '暂无历史数据' })
       }
     })
     if (termId.value) {
@@ -233,9 +239,9 @@ const handleTableChange = (pag) => {
 }
 
 /**筛选 */
-const filterData = ref({ course_id: '', name: '', domain: '', type: '', term_id: null})
+const filterData = ref({ course_id: '', name: '', domain: '', type: '', term_id: null })
 const handleReset = () => {
-  filterData.value = { course_id: '', name: '', domain: '', type: '', term_id: null}
+  filterData.value = { course_id: '', name: '', domain: '', type: '', term_id: null }
 }
 /**Drawer */
 const formData = ref({
@@ -257,7 +263,7 @@ const modalOpen = ref(false)
 const downloadOption = ref('all')
 
 const handleExport = async () => {
-  const data = {page: 1, limit: 1000000, option: {term_id: ''}}
+  const data = { page: 1, limit: 1000000, option: { term_id: '' } }
   switch (downloadOption.value) {
     case 'all':
       data.page = 1
@@ -276,7 +282,7 @@ const handleExport = async () => {
   data.option.term_id = termId.value
   const arrayBuffer = await fetch('/api/course/excel', {
     method: 'post',
-    headers: {...tokenHeader(),'Content-Type': 'application/json'},
+    headers: { ...tokenHeader(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ args: [data.page, data.limit, data.option] })
   }).then(res => res.arrayBuffer())
   downloadExcel(arrayBuffer, '课程数据.xlsx')

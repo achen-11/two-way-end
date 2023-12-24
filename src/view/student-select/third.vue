@@ -26,10 +26,15 @@
             <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
           </template>
           <template v-if="column.key === 'course_id'">
-            <a :href="record.link" target="_blank">
+            <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
               <StarFilled class="text-yellow-400" v-if="record?.Star?.length" />
-              {{ `[${record.course_id}] ${record.name}` }}
+              {{ `[${record.course_id}]` }}
             </a>
+            <span v-else>
+              <StarFilled class="text-yellow-400" v-if="record?.Star?.length" />
+              {{ `[${record.course_id}]` }}
+            </span>
+            {{ record.name }}
           </template>
           <template v-if="column.key === 'score'">
             <span>{{ record.score + ' / ' + record.hour }}</span>
@@ -48,7 +53,7 @@
           </template>
           <template v-if="column.key === 'option'">
             <a-popconfirm title="是否确认选课? " @confirm="handleSelect(record)" v-if="isSelected(record) === null">
-              <a-button type="link" 
+              <a-button type="link"
                 :disabled="calctTargetNum(record.target_num, record.selection_count, curStageInfo.stage) - getSelectedNum(record.selection_count, curStageInfo.stage) <= 0">选课</a-button>
             </a-popconfirm>
             <a-tag color="success" v-else-if="isSelected(record) === 1">选课成功</a-tag>

@@ -33,7 +33,13 @@
             <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
           </template>
           <template v-if="column.key === 'course_id'">
-            <a :href="record.link" target="_blank">{{ `[${record.course_id}] ${record.name}` }}</a>
+            <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
+              {{ `[${record.course_id}]` }}
+            </a>
+            <span v-else>
+              {{ `[${record.course_id}]` }}
+            </span>
+            {{ record.name }}
           </template>
           <template v-if="column.key === 'score'">
             <span>{{ record.score + ' / ' + record.hour }}</span>
@@ -156,7 +162,7 @@
         </p>
         <p class="text-sm text-neutral-500">点击或拖动文件至此区域上传</p>
       </a-upload-dragger>
-      <div v-if="uploadInfo?.length" class="mt-2" >
+      <div v-if="uploadInfo?.length" class="mt-2">
         <div class="text-black">导入日志:</div>
         <div class="max-h-[400px] overflow-y-auto mt-2 border text-red-400 rounded-md p-2" v-html="uploadInfo"></div>
       </div>
@@ -509,7 +515,7 @@ const handleUpload = async () => {
           // 成功日志
           uploadInfo.value += `
           <div class="text-black">
-            ${res.data.importRows.map(i=>i.name+'导入成功').join('</br>')}
+            ${res.data.importRows.map(i => i.name + '导入成功').join('</br>')}
             <div>成功导入数据: ${res.data.importRows.length}条</div>
           </div>`
         }

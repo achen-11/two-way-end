@@ -12,7 +12,13 @@
               {{ index + 1 }}
             </template>
             <template v-if="column.key === 'course_id'">
-              <a :href="record.link" target="_blank">{{ `[${record.course_id}] ${record.name}` }}</a>
+              <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
+                {{ `[${record.course_id}]` }}
+              </a>
+              <span v-else>
+                {{ `[${record.course_id}]` }}
+              </span>
+              {{ record.name }}
             </template>
             <template v-if="column.key === 'score'">
               <span>{{ record.score + ' / ' + record.hour }}</span>
@@ -36,7 +42,7 @@
         <a-form ref="formRef" :model="formData" :label-col="{ span: 5 }" layout="horizontal">
           <a-form-item class="mb-2" label="课程" name="course_id" required>
             <a class="border-b pb-1" :href="formData.link" target="_blank">
-            {{ `[${formData.course_id}] ${formData.name}`}}
+              {{ `[${formData.course_id}] ${formData.name}` }}
             </a>
           </a-form-item>
           <a-form-item class="mb-2" label="授课教师" name="teachers">
@@ -193,7 +199,7 @@ const open = async (item?: { id?: number, name: string, teacher_id?: string } | 
 
 const router = useRouter()
 const viewStudent = (record) => {
-  router.push({path:'/teacher/member', query: {course_id: record.id}})
+  router.push({ path: '/teacher/member', query: { course_id: record.id } })
 }
 
 </script>

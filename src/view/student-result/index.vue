@@ -12,7 +12,13 @@
               {{ index + 1 }}
             </template>
             <template v-if="column.key === 'course_id'">
-              <a :href="record.link" target="_blank">{{ `[${record.course_id}] ${record.name}` }}</a>
+              <a :href="record.link" target="_blank" v-if="!record?.link || record.link !== '#'" class="underline">
+                {{ `[${record.course_id}]` }}
+              </a>
+              <span v-else>
+                {{ `[${record.course_id}]` }}
+              </span>
+              {{ record.name }}
             </template>
             <template v-if="column.key === 'score'">
               <span>{{ record.score + ' / ' + record.hour }}</span>
@@ -66,9 +72,9 @@
             {{ formData.stage }}
           </a-form-item>
           <a-form-item class="mb-2" label="选课结果" name="status">
-              <a-tag v-if="formData.status === 0" color="processing">等待反选</a-tag>
-              <a-tag v-if="formData.status === 1" color="success">选课成功</a-tag>
-              <a-tag v-if="formData.status === 2" color="error">已拒绝</a-tag>
+            <a-tag v-if="formData.status === 0" color="processing">等待反选</a-tag>
+            <a-tag v-if="formData.status === 1" color="success">选课成功</a-tag>
+            <a-tag v-if="formData.status === 2" color="error">已拒绝</a-tag>
           </a-form-item>
 
         </a-form>
