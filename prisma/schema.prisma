@@ -118,7 +118,7 @@ model Course {
   name      String // 课程名称
   link      String // 链接
   week_num  String // 周次
-  score     Int // 学分
+  score     Float // 学分
   hour      Int // 学时
   prop      String // 性质 (网课\线下...)
   domain    String // 课程领域

@@ -87,7 +87,7 @@ export interface FindCourseOption {
   stage: number,
 
   /**仅展示收藏课程 */
-  only_star: boolean,
+  only_star?: boolean,
 
   course_id?: string,
   name?: string,
