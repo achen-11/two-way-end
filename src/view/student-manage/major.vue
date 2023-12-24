@@ -6,10 +6,10 @@
   <!-- Table -->
   <div class="mt-4">
     <a-table :columns="columns" :data-source="dataSource" :pagination="pagination" :loading="loading"
-      @change="handleTableChange" :scroll="{y: 495}">
+      @change="handleTableChange" :scroll="{ y: 495 }">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'index'">
-          <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
+          <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
         </template>
         <template v-if="column.key === 'option'">
           <a-button type="link" primary @click="open(record)">编辑</a-button>
@@ -50,10 +50,10 @@ import { reactive, ref } from 'vue'
 import { handleResponse, tokenHeader } from '@/utils';
 import { notification } from 'ant-design-vue';
 import { Major } from '@/utils/types'
-import { 
-  list as findByPage, create as addMajor, 
+import {
+  list as findByPage, create as addMajor,
   update as updateMajor, remove as deleteMajorById
- } from '@/api/service/[module]/crud'
+} from '@/api/service/[module]/crud'
 
 const columns = [
   {
@@ -87,6 +87,7 @@ const dataSource = ref([])
 const pagination = reactive({
   current: 1,
   total: 0,
+  pageSize: 10,
 })
 
 const loading = ref(false)
@@ -96,7 +97,10 @@ const init = async (page = 1) => {
   pagination.current = page
   const res = await findByPage({
     params: { module: 'major' },
-    query: { page: '' + page, limit: '' + 10 },
+    query: {
+      page: '' + pagination.current,
+      limit: '' + pagination.pageSize,
+    },
     headers: tokenHeader()
   })
   handleResponse(res, () => {
@@ -108,6 +112,8 @@ const init = async (page = 1) => {
 init()
 // 处理分页
 const handleTableChange = (pag: { pageSize: number, current: number }, filters, sorter) => {
+  pagination.current = pag.current
+  pagination.pageSize = pag.pageSize
   init(pag.current)
 }
 
@@ -169,7 +175,7 @@ const handleDelete = async (id: string) => {
   const res = await deleteMajorById({
     headers: tokenHeader(),
     query: { id },
-    params: { module: 'major'}
+    params: { module: 'major' }
   })
   handleResponse(res, () => {
     notification.success({ message: '专业管理', description: '删除成功!' })

@@ -8,7 +8,7 @@
         @change="handleTableChange" :scroll="{ y: 380, x: 'max-content' }">
         <template #bodyCell="{ column, record, index }">
           <template v-if="column.key === 'index'">
-            <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
+            <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
           </template>
           <template v-if="column.key === 'status'">
             <a-tag color="green" v-if="record.status">已发布</a-tag>

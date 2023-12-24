@@ -10,7 +10,7 @@
       @change="handleTableChange" :scroll="{ y: 495 }">
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'index'">
-          <span>{{ (index + 1) + 10 * (pagination.current - 1) }}</span>
+          <span>{{ (index + 1) + pagination.pageSize * (pagination.current - 1) }}</span>
         </template>
         <template v-if="column.key === 'major'">
           <span>{{ record.major.name }}</span>
@@ -109,6 +109,7 @@ const dataSource = ref([])
 
 const pagination = reactive({
   current: 1,
+  pageSize: 10,
   total: 0,
 })
 
@@ -118,7 +119,10 @@ const init = async (page = 1) => {
   loading.value = true
   pagination.current = page
   const res = await findByPage({
-    query: { page: '' + page, limit: '' + 10 },
+    query: {
+      page: '' + pagination.current,
+      limit: '' + pagination.pageSize,
+    },
     headers: tokenHeader()
   })
   handleResponse(res, () => {
@@ -130,6 +134,8 @@ const init = async (page = 1) => {
 init()
 // 处理分页
 const handleTableChange = (pag: { pageSize: number, current: number }, filters, sorter) => {
+  pagination.current = pag.current
+  pagination.pageSize = pag.pageSize
   init(pag.current)
 }
 
