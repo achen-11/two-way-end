@@ -7,7 +7,7 @@
       <a-input class="col-span-3" placeholder="专业" v-model:value="filterData.major"></a-input>
       <a-input class="col-span-3" placeholder="班级" v-model:value="filterData.class"></a-input>
       <div class="col-span-3">
-        <a-button type="primary" @click="init()">搜索</a-button>
+        <a-button type="primary" @click="handleSearch">搜索</a-button>
         <a-button class="ml-2" @click="handleReset">重置</a-button>
       </div>
     </div>
@@ -193,5 +193,10 @@ const formData = ref<{
 const open = async (item?: {} | null) => {
   formData.value = { ...item }
   drawerOpen.value = true
+}
+/**处理搜索事件 */
+const handleSearch = () => {
+  pagination.current = 1
+  init()
 }
 </script>

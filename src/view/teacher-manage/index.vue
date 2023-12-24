@@ -7,7 +7,7 @@
     <a-input class="col-span-3" placeholder="工号" v-model:value="filterData.teacher_id"></a-input>
     <a-input class="col-span-3" placeholder="姓名" v-model:value="filterData.name"></a-input>
     <div class="col-span-3">
-      <a-button type="primary" @click="init()">搜索</a-button>
+      <a-button type="primary" @click="handleSearch">搜索</a-button>
       <a-button class="ml-2" @click="handleReset">重置</a-button>
     </div>
   </div>
@@ -161,5 +161,10 @@ const handleDelete = async (id: number) => {
     init()
     notification.success({message: '教师信息管理', description: '删除成功'})
   })
+}
+/**处理搜索事件 */
+const handleSearch = () => {
+  pagination.current = 1
+  init()
 }
 </script>

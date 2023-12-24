@@ -13,7 +13,7 @@
     <a-input class="col-span-3" placeholder="班级" v-model:value="filterData.class"></a-input>
     <a-input class="col-span-3" placeholder="是否延毕" v-model:value="filterData.is_delay"></a-input>
     <div class="col-span-3">
-      <a-button type="primary" @click="init()">搜索</a-button>
+      <a-button type="primary" @click="handleSearch">搜索</a-button>
       <a-button class="ml-2" @click="handleReset">重置</a-button>
     </div>
   </div>
@@ -458,5 +458,10 @@ const handleUpload = async () => {
       }
       init()
     });
+}
+/**处理搜索事件 */
+const handleSearch = () => {
+  pagination.current = 1
+  init()
 }
 </script>

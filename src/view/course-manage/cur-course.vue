@@ -21,7 +21,7 @@
       <a-input class="col-span-3" placeholder="课程类型" v-model:value="filterData.type"></a-input>
       <div class="col-span-12">
         <a-button @click="handleReset">重置</a-button>
-        <a-button class="ml-2" type="primary" @click="init()">搜索</a-button>
+        <a-button class="ml-2" type="primary" @click="handleSearch">搜索</a-button>
       </div>
     </div>
     <!-- Table -->
@@ -522,5 +522,11 @@ const handleUpload = async () => {
       }
       init()
     });
+}
+
+/**处理搜索事件 */
+const handleSearch = () => {
+  pagination.current = 1
+  init()
 }
 </script>
