@@ -127,6 +127,7 @@ model Course {
   address     String // 授课教室
   course_time String // 授课时间
   target_num  Int // 限选人数
+  priority    Int @default(0)// 排序字段
 
   majorLimit CourseMaojrLimit[] // 专业限制
   stageLimit StageLimit[] // 年级限制

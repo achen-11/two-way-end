@@ -136,11 +136,14 @@
         <a-form-item label="第三阶段" name="grade_limits_third">
           <a-checkbox-group v-model:value="formData.grade_limits_third" :options="gradeOption" />
         </a-form-item>
+        <a-divider></a-divider>
+        <a-form-item label="优先级" name="grade_limits_third">
+          <a-input-number v-model:value="formData.priority" :min="0" :max="999" />
+        </a-form-item>
         <a-form-item :wrapper-col="{ span: 14, offset: 5 }">
           <a-button class="mr-2" @click="drawerOpen = false">取消</a-button>
           <a-button type="primary" @click="handleSubmit">确认</a-button>
         </a-form-item>
-
       </a-form>
     </a-drawer>
     <!-- DownLoad Modal -->
@@ -351,6 +354,7 @@ const formData = ref({
   id: null, course_id: '', name: '', domain: '', type: '', link: '', week_num: '', score: 0, hour: 0,
   prop: '', address: '', course_time: '', target_num: 0, major_limits: [], teachers: [],
   grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
+  priority: 0
 })
 
 const drawerOpen = ref(false)
@@ -366,6 +370,7 @@ const open = (item = null) => {
       course_id: '', name: '', domain: '', type: '', link: '', week_num: '', score: 0, hour: 0,
       prop: '', address: '', course_time: '', target_num: 0, major_limits: [], teachers: [],
       grade_limits_exhibit: [], grade_limits_first: [], grade_limits_second: [], grade_limits_third: [],
+      priority: 0
     }
     // formData.value = {
     //   id: 101,

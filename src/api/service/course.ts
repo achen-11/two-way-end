@@ -233,7 +233,7 @@ export const create = Api(
     const {
       course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num,
       major_limits, grade_limits_exhibit, grade_limits_first, grade_limits_second, grade_limits_third,
-      term_id, teachers
+      term_id, teachers, priority
     } = data
 
     // 专业限制
@@ -262,7 +262,7 @@ export const create = Api(
     const newCourse = await prisma.course.create({
       data: {
         term_id,
-        course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num,
+        course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num, priority,
 
         majorLimit: {
           createMany: {
@@ -296,7 +296,7 @@ export const update = Api(
     const {
       course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num,
       major_limits, grade_limits_exhibit, grade_limits_first, grade_limits_second, grade_limits_third,
-      term_id, id, majorLimit, stageLimit, CourseTeachers, teachers
+      term_id, id, majorLimit, stageLimit, CourseTeachers, teachers, priority
     } = data
 
     // 专业限制
@@ -314,7 +314,7 @@ export const update = Api(
     const newCourse = await prisma.course.update({
       data: {
         term_id,
-        course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num,
+        course_id, name, link, score, hour, week_num, course_time, domain, prop, type, address, target_num, priority,
         majorLimit: {
           deleteMany: removedMajorIds.map(m => { return { id: m } }),
           createMany: {
