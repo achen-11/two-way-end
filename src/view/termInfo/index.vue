@@ -3,6 +3,7 @@
     <a-button type="primary" @click="open()" class="ml-2 md:ml-0 col-span-2">新增选课</a-button>
     <a-button type="primary" class="ml-2 col-span-3" @click="autoSelect(1)">第一轮选课自动补选</a-button>
     <a-button type="primary" class="ml-2 col-span-3" @click="autoSelect(2)">第二轮选课自动补选</a-button>
+    <a-button type="primary" class="ml-2 col-span-3" @click="autoCalibrate" :loading="calibrateLoading">课程计数校准</a-button>
   </div>
   <div class="">
     <h3 class="my-4">当前选课</h3>
@@ -109,6 +110,7 @@ import { getCurTermInfo, getHistoryTermInfo, addTremInfo, endCurTermById, delete
 import { notification } from 'ant-design-vue';
 import { auto as autoSelectStu } from '@/api/service/select'
 import dayjs from 'dayjs';
+import { calibrate } from '@/api/service/course';
 
 // 当前
 const curDataSource = ref([])
@@ -311,6 +313,21 @@ const deleteTerm = async () => {
     notification.success({ message: '删除选课', description: '删除选课信息成功' })
     deleteModal.value = false
     init()
+  })
+}
+
+// 课程统计数据校准
+const calibrateLoading = ref(false)
+const autoCalibrate = async () => {
+  calibrateLoading.value = true
+  const res = await calibrate({
+    headers: tokenHeader()
+  })
+  handleResponse(res, ()=>{
+    console.log(res);
+    calibrateLoading.value = false
+  }, ()=>{
+    calibrateLoading.value = false
   })
 }
 </script>

@@ -5,6 +5,9 @@ import { jwtMiddleWare } from '@/api/middle/jwt';
 import { ExcelColumn } from '@/api/utils/types';
 import * as fs from 'fs'
 
+import { promisify } from 'util'
+const sleep = promisify(setTimeout)
+
 /**工具函数 */
 /**处理专业限制数据 */
 const handleMajorLimit = (oldData, newData) => {
@@ -103,6 +106,14 @@ const handleStageLimit = (oldData, newData) => {
   }
 }
 
+// 获取当前选课信息
+const getCurTermInfo = async () => {
+  return await prisma.term.findFirst({
+    where: {
+      status: true
+    }
+  })
+}
 
 /**
  * 根据 query\page 分页查询课程数据
@@ -460,5 +471,69 @@ export const download = Api(
   ContentType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
   async () => {
     return Buffer.from(fs.readFileSync('./import-template/课程信息导入模版.xlsx'))
+  }
+)
+
+/**
+ * 课程数据校准
+ */
+let calibrateLock = false
+export const calibrate = Api(
+  Post(),
+  Middleware([jwtMiddleWare]),
+  Headers<{ Authorization: string }>(),
+  async () => {
+    if (calibrateLock === true) {
+      return failRsp('正在校准中，请稍后再试')
+    }
+    try {
+      calibrateLock = true
+      // 获取当前选课信息
+      const termInfo = await getCurTermInfo()
+      if (!termInfo?.id) {
+        return failRsp('没有正在进行的选课')
+      }
+      // 获取所有的课程计数表
+      const allCourse = await prisma.course.findMany({ where: { term_id: termInfo.id } })
+      const res = []
+      for (let i = 0; i < allCourse.length; i++) {
+        const course = allCourse[i];
+        // 查询选课数据
+        const selectionInfo = await prisma.selection.findMany({
+          where: {
+            course_id: course.id
+          }
+        })
+        // 统计数据
+        const first_all_num = selectionInfo.filter(item=>item.stage===1).length
+        const first_success_num = selectionInfo.filter(item=>item.stage===1 && item.status===1).length
+        const second_all_num = selectionInfo.filter(item=>item.stage===2).length
+        const second_success_num = selectionInfo.filter(item=>item.stage===2 && item.status===1).length
+        const third_all_num = selectionInfo.filter(item=>item.stage===3).length
+        const third_success_num = selectionInfo.filter(item=>item.stage===3 && item.status===1).length
+        // 更新数据
+        await prisma.selectionCount.upsert({
+          create: {
+            course_id: course.id, first_all_num, first_success_num, second_all_num,
+            second_success_num, third_all_num, third_success_num
+          },
+          where: {
+            course_id: course.id
+          },
+          update: {
+            first_all_num, first_success_num, second_all_num,
+            second_success_num, third_all_num, third_success_num
+          }
+        })
+        res.push({
+          course_id: course.id, course_name: course.name,
+          first_all_num, first_success_num, second_all_num, second_success_num, third_all_num, third_success_num
+        })
+      }
+      
+      return successRsp(res)
+    } finally {
+      calibrateLock = false
+    }
   }
 )
