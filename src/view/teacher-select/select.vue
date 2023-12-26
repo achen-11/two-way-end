@@ -51,14 +51,22 @@
           <template v-if="column.key === 'class_name'">
             <span>{{ record.class.name }}</span>
           </template>
+          <template v-if="column.key === 'cause'">
+            <a-popover title="">
+              <template #content>
+                <div class="max-w-[400px]">{{ record.cause }}</div>
+              </template>
+              <span>{{ record.cause.length >= 100 ? record.cause.slice(0, 100) + '....' : record.cause }}</span>
+            </a-popover>
+          </template>
           <template v-if="column.key === 'is_delay'">
             <span>{{ record.is_delay ? '是' : '否' }}</span>
           </template>
           <template v-if="column.key === 'status'">
-              <a-tag v-if="record.status === 0" color="processing">等待反选</a-tag>
-              <a-tag v-if="record.status === 1" color="success">选课成功</a-tag>
-              <a-tag v-if="record.status === 2" color="error">已拒绝</a-tag>
-            </template>
+            <a-tag v-if="record.status === 0" color="processing">等待反选</a-tag>
+            <a-tag v-if="record.status === 1" color="success">选课成功</a-tag>
+            <a-tag v-if="record.status === 2" color="error">已拒绝</a-tag>
+          </template>
           <template v-if="column.key === 'option'">
             <a-button type="link" primary @click="open(record)">查看详情</a-button>
             <a-popconfirm title="是否同意该学生选修课程? " @confirm="handleReverse(record, 1)">
@@ -203,6 +211,12 @@ const columns = [
     dataIndex: 'status',
     key: 'status',
     width: 80
+  },
+  {
+    title: '选课理由',
+    dataIndex: 'cause',
+    key: 'cause',
+    width: 666
   },
   {
     title: '操作',
