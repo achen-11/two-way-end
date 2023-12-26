@@ -94,7 +94,7 @@
 
       <a-form-item class="mb-0" :wrapper-col="{ span: 14, offset: 5 }">
         <a-button class="mr-2" @click="drawerOpen = false">取消</a-button>
-        <a-button type="primary" @click="handleSelect">确认</a-button>
+        <a-button type="primary" @click="handleSelect" :loading="submitLoading">确认</a-button>
       </a-form-item>
     </a-form>
   </a-drawer>

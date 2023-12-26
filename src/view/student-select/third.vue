@@ -52,7 +52,8 @@
             <span>{{ getSelectedNum(record.selection_count, curStageInfo.stage) }}</span>
           </template>
           <template v-if="column.key === 'option'">
-            <a-popconfirm title="是否确认选课? " @confirm="handleSelect(record)" v-if="isSelected(record) === null">
+            <a-popconfirm title="是否确认选课? " @confirm="handleSelect(record)" v-if="isSelected(record) === null"
+            :disabled="calctTargetNum(record.target_num, record.selection_count, curStageInfo.stage) - getSelectedNum(record.selection_count, curStageInfo.stage) <= 0">
               <a-button type="link"
                 :disabled="calctTargetNum(record.target_num, record.selection_count, curStageInfo.stage) - getSelectedNum(record.selection_count, curStageInfo.stage) <= 0">选课</a-button>
             </a-popconfirm>
