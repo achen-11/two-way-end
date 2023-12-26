@@ -5,6 +5,8 @@ import { FindCourseOption } from "@/api/utils/types";
 import { failRsp, successRsp } from "../utils/utils";
 import { getStuSelectedNum, validateHistorySelected, validateTrem } from "../utils/select";
 import { Selection } from "@prisma/client";
+import { promisify } from 'util'
+const sleep = promisify(setTimeout)
 
 
 // 获取当前选课信息
@@ -168,6 +170,144 @@ export const unstar = Api(
   }
 )
 
+
+let lock = false
+const handleSelect = async (course_id: number, student_id: number, stage: number, will_num?: number, cause?: string) => {
+  // 获取当前选课信息
+  const termInfo = await getCurTermInfo()
+  // 获取学生数据
+  const stuInfo = await prisma.student.findUnique({
+    where: {
+      id: student_id,
+    },
+    select: {
+      id: true,
+      is_delay: true, // 是否延毕
+      type: true, // 专升本 or 本科生
+      class: {
+        select: {
+          enroll_year: true,
+          major_id: true, // 专业限制
+        }
+      },
+      Selection: {
+        where: {
+          student_id,
+        },
+        include: {
+          course: {
+            select: { course_id: true, week_num: true, course_time: true, score: true }
+          }
+        }
+      }
+    }
+  })
+  const courseInfo = await prisma.course.findFirst({
+    where: { id: course_id },
+    select: {
+      target_num: true,
+      course_id: true,
+      week_num: true,
+      course_time: true,
+      score: true,
+      majorLimit: { select: { major_id: true, } },
+      stageLimit: { select: { stage: true, grade: true } },
+    }
+  })
+  const majorLimtIds = courseInfo.majorLimit.map(item => item.major_id)
+
+  // 
+  // 1. 校验选课时间 (保险非正当手段-api)
+  const termValidRes = validateTrem(termInfo, stage)
+  if (termValidRes !== true) {
+    return failRsp(termValidRes)
+  }
+  // 2. 校验学生专业
+  if (majorLimtIds.includes(stuInfo.class.major_id)) {
+    return failRsp('专业限制')
+  }
+  // 3. 校验学生年级
+  const grade = termInfo.academic_end - stuInfo.class.enroll_year
+  if (courseInfo.stageLimit.find(item => item.stage === stage && item.grade === grade)) {
+    return failRsp('阶段-年级限制')
+  }
+
+  // 4. 校验学生选课数量
+  const selected_course_num = getStuSelectedNum(stuInfo.Selection, termInfo, stage)
+  // 本科生 && 大一大二 限制2 学分
+  if (stuInfo.type === 0 && [1, 2].includes(grade) && selected_course_num + courseInfo.score > 2) {
+    return failRsp('选课学分已达 2 学分上限')
+  }
+  // 5. 所有人不能超过 4 学分
+  if (selected_course_num + courseInfo.score > 4) {
+    return failRsp('选课学分已达 4 学分上限')
+  }
+  // 6. 校验历史选课 \ 同 course_id重复选课
+  const historySelectedValidate = validateHistorySelected(stuInfo.Selection, courseInfo.course_id)
+  if (!historySelectedValidate) {
+    return failRsp('您已修读过或选择过该门课程, 请勿重复选择')
+  }
+  // 7. 周次限制
+  const allWeekNumTag = []
+  stuInfo.Selection.forEach(s => {
+    if (s.term_id === termInfo.id && s.status !== 2) {
+      allWeekNumTag.push(s.course.week_num + s.course.course_time)
+    }
+  })
+  if (allWeekNumTag.includes(courseInfo.week_num + courseInfo.course_time)) {
+    return failRsp('授课时间冲突! 您有同一授课时间(周次+授课时间)的课程, 不能重复选择')
+  }
+  // 8. 校验人数限制 (第三轮)
+  if (stage === 3) {
+    // 最好加下缓存
+    // 获取当前课程可选人数 = target - 全部成功选上的
+    const successNum = await prisma.selection.count({
+      where: {
+        course_id,
+        status: 1
+      }
+    })
+    const availableNum = courseInfo.target_num - successNum
+    if (availableNum <= 0) return failRsp('该课程选课人数已满, 请选择其他课程')
+  }
+
+  // 校验通过 写入
+  const res = await prisma.selection.create({
+    data: {
+      student_id: student_id,
+      course_id: course_id,
+      stage,
+      status: stage === 3 ? 1 : 0, // 第三阶段直接选上, 其他为待处理
+      will_num: will_num || 0,
+      cause: cause || '',
+      term_id: termInfo.id
+    }
+  })
+
+  // 更新选课计数
+  let createContent
+  let updateContent
+  if (stage === 1) {
+    createContent = { course_id: course_id, first_all_num: 1 }
+    updateContent = { first_all_num: { increment: 1 }, }
+  } else if (stage === 2) {
+    createContent = { course_id: course_id, second_all_num: 1 }
+    updateContent = { second_all_num: { increment: 1 }, }
+  } else if (stage === 3) {
+    createContent = { course_id: course_id, third_all_num: 1 }
+    updateContent = { third_all_num: { increment: 1 }, third_success_num: { increment: 1 } }
+  }
+  await prisma.selectionCount.upsert({
+    create: createContent,
+    update: updateContent,
+    where: {
+      course_id: course_id
+    }
+  })
+  return successRsp(res)
+}
+
+
 /**
  * 选课
  */
@@ -176,138 +316,19 @@ export const select = Api(
   Middleware([jwtMiddleWare]),
   Headers<{ Authorization: string }>(),
   async (course_id: number, student_id: number, stage: number, will_num?: number, cause?: string) => {
-    // 获取当前选课信息
-    const termInfo = await getCurTermInfo()
-    // 获取学生数据
-    const stuInfo = await prisma.student.findUnique({
-      where: {
-        id: student_id,
-      },
-      select: {
-        id: true,
-        is_delay: true, // 是否延毕
-        type: true, // 专升本 or 本科生
-        class: {
-          select: {
-            enroll_year: true,
-            major_id: true, // 专业限制
-          }
-        },
-        Selection: {
-          where: {
-            student_id,
-          },
-          include: {
-            course: {
-              select: { course_id: true, week_num: true, course_time: true, score: true }
-            }
-          }
-        }
-      }
-    })
-    const courseInfo = await prisma.course.findFirst({
-      where: { id: course_id },
-      select: {
-        target_num: true,
-        course_id: true,
-        week_num: true,
-        course_time: true,
-        score: true,
-        majorLimit: { select: { major_id: true, } },
-        stageLimit: { select: { stage: true, grade: true } },
-      }
-    })
-    const majorLimtIds = courseInfo.majorLimit.map(item => item.major_id)
+    // 如果锁已占用, 等待 100ms 后执行
+    if (lock === true) {
+      await sleep(100)
+      return handleSelect(course_id, student_id, stage, will_num, cause)
+    }
+    try {
+      lock = true
+      return await handleSelect(course_id, student_id, stage, will_num, cause)
 
-    // 
-    // 1. 校验选课时间 (保险非正当手段-api)
-    const termValidRes = validateTrem(termInfo, stage)
-    if (termValidRes !== true) {
-      return failRsp(termValidRes)
+    } finally {
+      // 释放锁
+      lock = false
     }
-    // 2. 校验学生专业
-    if (majorLimtIds.includes(stuInfo.class.major_id)) {
-      return failRsp('专业限制')
-    }
-    // 3. 校验学生年级
-    const grade = termInfo.academic_end - stuInfo.class.enroll_year
-    if (courseInfo.stageLimit.find(item => item.stage === stage && item.grade === grade)) {
-      return failRsp('阶段-年级限制')
-    }
-
-    // 4. 校验学生选课数量
-    const selected_course_num = getStuSelectedNum(stuInfo.Selection, termInfo, stage)
-    // 本科生 && 大一大二 限制2 学分
-    if (stuInfo.type === 0 && [1, 2].includes(grade) && selected_course_num+courseInfo.score > 2) {
-      return failRsp('选课学分已达 2 学分上限')
-    }
-    // 5. 所有人不能超过 4 学分
-    if (selected_course_num+courseInfo.score > 4) {
-      return failRsp('选课学分已达 4 学分上限')
-    }
-    // 6. 校验历史选课 \ 同 course_id重复选课
-    const historySelectedValidate = validateHistorySelected(stuInfo.Selection, courseInfo.course_id)
-    if (!historySelectedValidate) {
-      return failRsp('您已修读过或选择过该门课程, 请勿重复选择')
-    }
-    // 7. 周次限制
-    const allWeekNumTag = []
-    stuInfo.Selection.forEach(s => {
-      if (s.term_id === termInfo.id && s.status !== 2) {
-        allWeekNumTag.push(s.course.week_num + s.course.course_time)
-      }
-    })
-    if (allWeekNumTag.includes(courseInfo.week_num + courseInfo.course_time)) {
-      return failRsp('授课时间冲突! 您有同一授课时间(周次+授课时间)的课程, 不能重复选择')
-    }
-    // 8. 校验人数限制 (第三轮)
-    if (stage === 3) {
-      // 最好加下缓存
-      // 获取当前课程可选人数 = target - 全部成功选上的
-      const successNum = await prisma.selection.count({
-        where: {
-          course_id,
-          status: 1
-        }
-      })
-      const availableNum = courseInfo.target_num - successNum
-      if (availableNum <= 0) return failRsp('该课程选课人数已满, 请选择其他课程')
-    }
-
-    // 校验通过 写入
-    const res = await prisma.selection.create({
-      data: {
-        student_id: student_id,
-        course_id: course_id,
-        stage,
-        status: stage === 3 ? 1 : 0, // 第三阶段直接选上, 其他为待处理
-        will_num: will_num || 0,
-        cause: cause || '',
-        term_id: termInfo.id
-      }
-    })
-
-    // 更新选课计数
-    let createContent
-    let updateContent
-    if (stage === 1) {
-      createContent = { course_id: course_id, first_all_num: 1 }
-      updateContent = { first_all_num: { increment: 1 }, }
-    } else if (stage === 2) {
-      createContent = { course_id: course_id, second_all_num: 1 }
-      updateContent = { second_all_num: { increment: 1 }, }
-    } else if (stage === 3) {
-      createContent = { course_id: course_id, third_all_num: 1 }
-      updateContent = { third_all_num: { increment: 1 }, third_success_num: { increment: 1 } }
-    }
-    await prisma.selectionCount.upsert({
-      create: createContent,
-      update: updateContent,
-      where: {
-        course_id: course_id
-      }
-    })
-    return successRsp(res)
   }
 )
 
