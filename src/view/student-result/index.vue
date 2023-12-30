@@ -36,6 +36,9 @@
             </template>
             <template v-if="column.key === 'option'">
               <a-button type="link" primary @click="open(record)">查看详情</a-button>
+              <a-popconfirm title="是否确认退选该课程? " @confirm="handleCancelSelect(record)" v-if="isRefund(record)">
+                <a-button type="text" danger>退选</a-button>
+              </a-popconfirm>
             </template>
           </template>
         </a-table>
@@ -89,11 +92,15 @@ import { all as getAllSelection } from '@/api/service/result'
 import { getAllTermInfo } from '@/api/service/termInfo'
 import { handleResponse, tokenHeader } from '@/utils';
 import { notification } from 'ant-design-vue';
-import { useUserStore } from '@/store/store';
+import { useTermStore, useUserStore } from '@/store/store';
 import { courseRecord } from '@/utils/types';
+import { course, select, unselect } from '@/api/service/select'
 
 const userStore = useUserStore()
 const { userInfo } = toRefs(userStore)
+// 获取当前选课信息
+const termStore = useTermStore()
+const { termInfo, curStageInfo } = toRefs(termStore)
 
 /**获取所有历史数据 */
 const termId = ref('')
@@ -202,4 +209,41 @@ const open = async (item?: { id?: number, name: string, teacher_id?: string } | 
   drawerOpen.value = true
 }
 
+// 是否可以退选
+const isRefund = (record) => {
+  const { stage, term_id } = record
+  if (stage === 3) return false
+  if (curStageInfo.value.stage !== 1 && curStageInfo.value.stage !== 2) return false
+  if (term_id !== termInfo.value.id) return false
+  return true
+}
+
+// 获取当前选课信息
+const termInfoInit = async () => {
+  loading.value = true
+  try {
+    await termStore.setTermInfo()
+    console.log('termInfo;;', termInfo.value);
+    console.log(curStageInfo);
+    loading.value = false
+  } catch (e) {
+    notification.error({ message: '双向选课', description: '获取课程数据异常' })
+    loading.value = false
+  }
+}
+termInfoInit()
+
+/* 取消选课 */
+const handleCancelSelect = async (record) => {
+  const { course: { id }, stage } = record
+  const student_id = userInfo.value.id
+
+  const status = record.status
+
+  const res = await unselect(id, student_id, stage, status, { headers: tokenHeader() })
+  handleResponse(res, () => {
+    init()
+    notification.success({ message: '取消选课', description: '取消选课成功' })
+  })
+}
 </script>
