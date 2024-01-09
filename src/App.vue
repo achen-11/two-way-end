@@ -40,7 +40,7 @@ watch(userInfo, ()=>{
 })
 
 const showModal = async () => {
-  const isFirst = localStorage.getItem('isFirst')
+  const isFirst = sessionStorage.getItem('isFirst')
   console.log('userInfo.value.role', userInfo.value.role);
   
   if (userInfo.value.role === null || userInfo.value.role !== 'student') {
@@ -58,7 +58,7 @@ const showModal = async () => {
     // 显示弹窗
     modalContent.value = res.data
     modalOpen.value = true
-    localStorage.setItem('isFirst', 'false')
+    sessionStorage.setItem('isFirst', 'false')
   }, () => {
     // 异常处理
     modalOpen.value = false
