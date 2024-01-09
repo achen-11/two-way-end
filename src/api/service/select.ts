@@ -83,9 +83,11 @@ export const course = Api(
           selection_count: {}, //该课程的选课计数
           CourseTeachers: { select: { teacher: { select: { name: true } } } } // 课程教师
         },
-        orderBy: {
-          priority: 'desc'
-        },
+        orderBy: [
+          { priority: 'asc' },
+          { created_time: 'asc' },
+          
+      ],
         skip: Number(page - 1) * Number(limit),
         take: Number(limit),
       })
