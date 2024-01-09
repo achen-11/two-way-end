@@ -149,6 +149,7 @@ const init = async () => {
     const res = await getMembers({
       query: {
         page: '' + pagination.current, limit: '' + pagination.pageSize,
+        option: JSON.stringify(filterData.value),
         teacher_id: '' + userInfo.value.id, course_id: '' + courseId
       },
       headers: tokenHeader()

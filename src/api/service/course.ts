@@ -380,12 +380,12 @@ export const remove = Api(
  */
 export const member = Api(
   Get(),
-  Query<{ page: string, limit: string, teacher_id: string, course_id: string }>(),
+  Query<{ page: string, limit: string, teacher_id: string, course_id: string, option: string }>(),
   Middleware([jwtMiddleWare]),
   Headers<{ Authorization: string }>(),
   async () => {
     const ctx = useContext()
-    const { teacher_id, course_id, page, limit } = ctx.query
+    const { teacher_id, course_id, page, limit, option='{}' } = ctx.query
     const course = await prisma.course.findUnique({
       where: {
         id: +course_id
@@ -401,10 +401,26 @@ export const member = Api(
     if (course.CourseTeachers.length === 0) {
       return failRsp('您不是该课程的授课教师')
     }
+    const filterData = JSON.parse(option)
+    let where = {}
+    const keys = ['name', 'stu_id', 'major', 'class', 'is_delay']
+    Object.keys(filterData).forEach((key) => {
+      if (keys.includes(key)) {
+        if (key === 'class') {
+          where[key] = { name: { contains: filterData[key] } }
+        } else if (key === 'major') {
+          if (!where['class']) where['class'] = {}
+          where['class'].major = { name: { contains: filterData[key] } }
+        } else {
+          where[key] = { contains: filterData[key] }
+        }
+      }
+    })
     const res = await prisma.selection.findMany({
       where: {
         course_id: +course_id,
         status: 1,
+        student: where
       },
       include: {
         student: {
