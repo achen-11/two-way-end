@@ -134,7 +134,7 @@ export function getCurrentTeacherStage(termInfo: OriTermInfo) {
   }
   // 第三阶段
   else if (now.isBetween(dayjs(third_stage_start), dayjs(third_stage_end))) {
-    return { stage: -999, timeRange: [third_stage_start, third_stage_end], title: '第三轮选课', description: '第二轮选课进行中, 等待学生选课' }
+    return { stage: -999, timeRange: [third_stage_start, third_stage_end], title: '第三轮选课', description: '第三轮选课进行中, 等待学生选课' }
   } 
   // 选课结束
   else if (now.isAfter(dayjs(third_stage_end))) {
